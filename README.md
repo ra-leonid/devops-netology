@@ -30,3 +30,6 @@ git diff --staged - сравнивает Staged и Unmodified (проиндек�
 	- файлы "override.tf" и "override.tf.json"
 	- файлы заканчивающиеся на "_override.tf", "_override.tf.json"
 	- файлы ".terraformrc", "terraform.rc"
+
+## это fix ##
+мы что-то исправили
