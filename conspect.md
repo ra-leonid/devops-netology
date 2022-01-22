@@ -91,8 +91,8 @@
 * `git log --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short > change.log` - с выгрузкой в файл "change.log"
 
 Вывод истории изменений для отчета бизнесу. Нижняя граница исключается, верхняя - включается:
-* `git log 07885d5..01e1ae5 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log' - в диапазоне коммитов, в файл.
-* `git log v2.1.4.59..v2.1.4.60 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log' - в диапазоне тегов, в файл.
+* `git log 07885d5..01e1ae5 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log` - в диапазоне коммитов, в файл.
+* `git log v2.1.4.59..v2.1.4.60 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log` - в диапазоне тегов, в файл.
 
 ## Переход по коммитам
 
