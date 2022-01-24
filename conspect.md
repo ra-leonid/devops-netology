@@ -64,6 +64,8 @@
 
 `git mv file.src file.dect`
 
+## Работа с историей коммитов
+
 Просмотр истории коммитов
 
 `git log`
@@ -78,6 +80,29 @@
 Просмотр конкретного коммита:
 
 `git show 62d641c`
+
+Краткий лог по диапазону коммитов исключая merge-коммиты. Нижняя граница исключается, верхняя - включается:
+* `git log 66236fd..01e1ae5 --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short` - в диапазоне коммитов
+* `git log v2.1.4.59..v2.1.4.60 --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short` - в диапазоне тегов
+* `git log v2.1.4.59..v2.1.4.60 --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short > change.log` - в диапазоне тегов, с выгрузкой в файл "change.log"
+
+Краткий лог по всем коммитам исключая merge-коммиты:
+* `git log --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short`
+* `git log --no-merges --pretty=format:"%h | %ad | %an | %s%d" --date=short > change.log` - с выгрузкой в файл "change.log"
+
+Вывод истории изменений для отчета бизнесу. Нижняя граница исключается, верхняя - включается:
+* `git log 07885d5..01e1ae5 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log` - в диапазоне коммитов, в файл.
+* `git log v2.1.4.59..v2.1.4.60 --no-merges --pretty=format:"##COMMIT##%n%h%n%ad%n%an%n%s%n%d%n%b%n##FILES##" --name-status > change.log` - в диапазоне тегов, в файл.
+
+## Переход по коммитам
+
+Перенос указателя на конкретный коммит:
+
+`git checkout 66236fd` 
+
+Возврат к последнему коммиту:
+* `git checkout -` - после однократного перехода
+* `git checkout <branch name>`
 
 ## Команды отмены
 
@@ -145,7 +170,6 @@
 * `-m` - комментарий аннотированного тега
 * `-d` - удаление тега в локальном репозитории
 
-
 Создание аннотированного тега:
 
 `git tag -a v0.0.1 -m "Комментарий тега"`
@@ -178,7 +202,7 @@
 
 `git switch -c <branch_name> <tagname>`
 
-
 Создать ветку от текущего коммита:
 
 `git switch -c <branch_name>`
+
