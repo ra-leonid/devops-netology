@@ -219,6 +219,26 @@
 
 `git remote rm remote-name`
 
+Создать ветку от определенного коммита:
+
+`git switch -c <branch_name> <tagname>`
+
+Создать ветку от текущего коммита:
+
+`git switch -c <branch_name>`
+
+Удалить все отслеживаемые ветки:
+
+`git branch -r | grep -v '\->' | while read remote; do git branch -d -r "$remote"; done`
+
+По всем отслеживаемым веткам создать локальные:
+
+`git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done`
+
+Изменить связь текущей ветки с отслеживаемой:
+
+`git branch -u origin/main`
+
 ## Работа с тегами
 Теги бывают **легковесными** и **аннотированными**.
 
@@ -259,22 +279,6 @@
 Удаление тега в удаленном репозитории:
 
 `git push origin --delete <tagname>`
-
-Создать ветку от определенного коммита:
-
-`git switch -c <branch_name> <tagname>`
-
-Создать ветку от текущего коммита:
-
-`git switch -c <branch_name>`
-
-Удалить все отслеживаемые ветки:
-
-`git branch -r | grep -v '\->' | while read remote; do git branch -d -r "$remote"; done`
-
-По всем отслеживаемым веткам создать локальные:
-
-`git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done`
 
 ## Поиск в Git
 
