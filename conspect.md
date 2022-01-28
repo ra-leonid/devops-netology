@@ -206,3 +206,10 @@
 
 `git switch -c <branch_name>`
 
+Удалить все отслеживаемые ветки:
+
+`git branch -r | grep -v '\->' | while read remote; do git branch -d -r "$remote"; done`
+
+По всем отслеживаемым веткам создать локальные:
+
+`git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done`
