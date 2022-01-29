@@ -195,7 +195,7 @@
 Пример:
 ![Пример разбиения коммитов](lessons_img/split_commits.png)
 
-## Удаление фала из каждого коммита
+## Удаление файла из каждого коммита
 `git filter-branch --tree-filter 'rm -f passwords.txt' HEAD` - удалит файл "passwords.txt" во всей истории начиная с HEAD.
 
 команда изменить все коммиты начиная с коммита, в котором будет найден файл, поэтому всей команде потом надо будет получить репо с `git pull --force`
@@ -215,38 +215,6 @@
 
 Но, если потом сделать опять коммит слияния с этой веткой, то в ветку слияния попадут только те коммиты, которых раньше не было. Это плохо. Чтобы это исправить, необходимо отменить коммит отмены:
 `git rever ^M`
-
-## Расширенный merge
-Прерывание слияния: 
-`git merge --abort` или `git reset --hard HEAD`
-
-Игнорирование пробельных символов:
-* `git merge -Xignore-all-space <branch>`
-* `git merge -Xignore-space-change <branch>`
-
-![](lessons_img/hand_merge.png)
-![](lessons_img/hand_merge_1.png)
-![](lessons_img/hand_merge_2.png)
-
-Если хотим восстановить состояние конфликта (например решили неправильно и хотим начать решать конфликт заново):
-
-![](lessons_img/checkout_merge_conflict.png)
-
-![](lessons_img/merge_conflict_log.png)
-![](lessons_img/merge_conflict_log1.png)
-![](lessons_img/rerere.png)
-![](lessons_img/blame.png)
-![](lessons_img/submodules.png)
-![](lessons_img/submodules1.png)
-![](lessons_img/submodules2.png)
-![](lessons_img/get_diff.png)
-![](lessons_img/change_branch_submodule.png)
-![](lessons_img/select_branch_submobule.png)
-![](lessons_img/push_submodules.png)
-
-Для того чтобы выполнить команду ко всем модулям используем команду:
-
-`git submodule foreach 'git stash'`
 
 ## Разделение и объединение истории
 Создаем ветку, с коммита которой произойдет разделение:
@@ -424,3 +392,37 @@
 `git bisect start <good_commit> <bad_commit>`
 
 `git bisect run test-error.sh`
+
+## Расширенный merge
+TODO: Разобрать файлы на текст
+
+Прерывание слияния: 
+`git merge --abort` или `git reset --hard HEAD`
+
+Игнорирование пробельных символов:
+* `git merge -Xignore-all-space <branch>`
+* `git merge -Xignore-space-change <branch>`
+
+![](lessons_img/hand_merge.png)
+![](lessons_img/hand_merge_1.png)
+![](lessons_img/hand_merge_2.png)
+
+Если хотим восстановить состояние конфликта (например решили неправильно и хотим начать решать конфликт заново):
+
+![](lessons_img/checkout_merge_conflict.png)
+
+![](lessons_img/merge_conflict_log.png)
+![](lessons_img/merge_conflict_log1.png)
+![](lessons_img/rerere.png)
+![](lessons_img/blame.png)
+![](lessons_img/submodules.png)
+![](lessons_img/submodules1.png)
+![](lessons_img/submodules2.png)
+![](lessons_img/get_diff.png)
+![](lessons_img/change_branch_submodule.png)
+![](lessons_img/select_branch_submobule.png)
+![](lessons_img/push_submodules.png)
+
+Для того чтобы выполнить команду ко всем модулям используем команду:
+
+`git submodule foreach 'git stash'`
