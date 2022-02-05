@@ -193,7 +193,7 @@
 2. Далее сбрасываем указатель и вводим новые коммиты
 
 Пример:
-![Пример разбиения коммитов](lessons_img/split_commits.png)
+![Пример разбиения коммитов](lessons-git-img/split_commits.png)
 
 ## Удаление файла из каждого коммита
 `git filter-branch --tree-filter 'rm -f passwords.txt' HEAD` - удалит файл "passwords.txt" во всей истории начиная с HEAD.
@@ -403,25 +403,25 @@ TODO: Разобрать файлы на текст
 * `git merge -Xignore-all-space <branch>`
 * `git merge -Xignore-space-change <branch>`
 
-![](lessons_img/hand_merge.png)
-![](lessons_img/hand_merge_1.png)
-![](lessons_img/hand_merge_2.png)
+![](lessons-git-img/hand_merge.png)
+![](lessons-git-img/hand_merge_1.png)
+![](lessons-git-img/hand_merge_2.png)
 
 Если хотим восстановить состояние конфликта (например решили неправильно и хотим начать решать конфликт заново):
 
-![](lessons_img/checkout_merge_conflict.png)
+![](lessons-git-img/checkout_merge_conflict.png)
 
-![](lessons_img/merge_conflict_log.png)
-![](lessons_img/merge_conflict_log1.png)
-![](lessons_img/rerere.png)
-![](lessons_img/blame.png)
-![](lessons_img/submodules.png)
-![](lessons_img/submodules1.png)
-![](lessons_img/submodules2.png)
-![](lessons_img/get_diff.png)
-![](lessons_img/change_branch_submodule.png)
-![](lessons_img/select_branch_submobule.png)
-![](lessons_img/push_submodules.png)
+![](lessons-git-img/merge_conflict_log.png)
+![](lessons-git-img/merge_conflict_log1.png)
+![](lessons-git-img/rerere.png)
+![](lessons-git-img/blame.png)
+![](lessons-git-img/submodules.png)
+![](lessons-git-img/submodules1.png)
+![](lessons-git-img/submodules2.png)
+![](lessons-git-img/get_diff.png)
+![](lessons-git-img/change_branch_submodule.png)
+![](lessons-git-img/select_branch_submobule.png)
+![](lessons-git-img/push_submodules.png)
 
 Для того чтобы выполнить команду ко всем модулям используем команду:
 
