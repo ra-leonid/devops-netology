@@ -25,7 +25,7 @@ bash: /usr/bin/bash /etc/bash.bashrc /usr/share/man/man1/bash.1.gz
 
 5. Получится ли одновременно передать команде файл на stdin и вывести ее stdout в другой файл? Приведите работающий пример.
 
-**Ответ**: Получится.
+**Ответ**: Получится. Команда `grep расширен < README.md > result.txt ` 
 
 ![](img/terminal-02-5.png)
 
