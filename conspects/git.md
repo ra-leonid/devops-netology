@@ -20,6 +20,14 @@
 
 `git config --global alias.br branch`
 
+## Первоначальная настройка
+`ssh-keygen -t rsa -b 4096 -C "rastorguyevl@list.ru"` - Генерация ключа
+```commandline
+git config --global user.name "Leonid Rastorguev"
+git config --global user.email "rastorguyevl@list.ru"
+git config --global color.ui auto
+```
+
 ## Команды работы с изменениями:
 Краткий вывод состояний файлов репы:
 

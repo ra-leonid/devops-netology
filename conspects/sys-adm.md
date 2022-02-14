@@ -101,6 +101,22 @@ vagrant@vagrant:~$ disown top
 * Выходим `Ctrl-a d`
 * Всё, можем отключаться от сессии ssh, при повторном входе и подключению к терминалу screen, мы увидим свой процесс 
 
+## Vagrant
+
+`vagrant ssh` - подключиться по SSH под юзером vagrant
+
+`vagrant suspend` - поставить на паузу
+
+`vagrant halt` - выключить
+
+`vagrant reload` - перезагрузить конфиг (без выполнения provision)
+
+`vagrant reload --provision`
+
+`vagrant destroy` - удалить виртуалку
+
+`vagrant box list` - cписок доступных "боксов"
+
 ## Операционная система
 
 `ldd` - вывод зависимостей общих объектов
@@ -140,22 +156,6 @@ PCOMM            PID    PPID   RET ARGS
 systemctl        174640 24777    0 /usr/bin/systemctl status nginx
 systemctl        174641 24777    0 /usr/bin/systemctl status nginx
 ```
-## Vagrant
-
-`vagrant ssh` - подключиться по SSH под юзером vagrant
-
-`vagrant suspend` - поставить на паузу
-
-`vagrant halt` - выключить
-
-`vagrant reload` - перезагрузить конфиг (без выполнения provision)
-
-`vagrant reload --provision`
-
-`vagrant destroy` - удалить виртуалку
-
-`vagrant box list` - cписок доступных "боксов"
-
 ## Оценка потребления ресурсов
 
 `free -m`, `free -g` - обзор памяти в МБ и ГБ
