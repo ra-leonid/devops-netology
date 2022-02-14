@@ -204,3 +204,174 @@ Linux 4.19.102+ (api-6f74c84dfb-wlrrz)_x86_64_(12 CPU)
 iftop показывает сетевое взаимодействие без привязки к процессом. Для подобной статистики запустите `nethogs <interface>`.
 
 Нередко на хосте бывает несколько сетевых интерфейсов, и может быть важно оценить загрузку по ним. В такой ситуации поможет `sar -n DEV 1`
+
+### node_exporter
+Приведенные выше инструменты хороши для интерактивной оценки производительности системы, но они не решают проблемы сбора исторических данных.
+
+Решение: актуальная связка Prometheus + node_exporter.
+
+С коллектором вы познакомитесь в модуле по мониторингу, но на node_exporter логично взглянуть на этой лекции.
+
+```commandline
+vagrant@netology1:~/node_exporter-1.0.1.linux-amd64$ curl -s localhost:9100/metrics2>/dev/null | grep node_filesystem_avail_bytes | grep mapper
+node_filesystem_avail_bytes{device="/dev/mapper/vgvagrant-root",fstype="ext4",mountpoint="/"} 6.075752448e+10
+
+vagrant@netology1:~/node_exporter-1.0.1.linux-amd64$ df -h | grep mapper
+/dev/mapper/vgvagrant-root   62G  1.6G   57G   3% /
+```
+
+# Ядро, модули
+
+## Ядро и дистрибутив
+
+`uname -r` - Посмотреть версию ядра, с которой работает ОС
+
+`cat /etc/issue`, `lsb_release -a` - сведения о дистрибутиве
+
+`grep -v ^# /boot/config-$(uname -r) | tail -n2` - Посмотреть, с какой конфигурацией ядро собрано
+
+В современных ОС ядра распространяются в форме пакетов, как и другие приложения:
+```commandline
+root@netology1:~# dpkg -l | grep linux-image-5
+ii  linux-image-5.4.0-31-generic  5.4.0-31.35   amd64    Signed kernel image generic
+```
+
+Установочные скрипты сами обновляют записи загрузчика, initrd и vmlinuz (бинарный образ ядра).
+
+## Модули ядра
+По формальной классификации ядро Linux – монолитное. Несмотря на это, есть возможность динамически подгружать и выгружать модули.
+
+`lsmod | wc -l` - Посмотреть загруженные
+
+Классическая команда для загрузки нового модуля – insmod (insert module), однако есть более удобный современный вариант – modprobe, который умеет автоматически подгружать зависимости и не требует указания пути:
+```commandline
+vagrant@netology1:~$ modinfo virtio_net | grep depends
+depends: net_failover
+… sudo insmod /lib/modules/$(uname -r)/kernel/drivers/net/virtio_net.ko
+insmod: ERROR: could not insert module
+/lib/modules/5.4../kernel/drivers/net/virtio_net.ko: Unknown symbol in module
+vagrant@netology1:~$ sudo modprobe virtio_net
+```
+
+## Настройка ядра – параметры загрузки
+В части параметров настройки ядро Linux аналогично обычным приложениям - оно принимает строку параметров на вход.
+```commandline
+vagrant@netology1:~$ cat /proc/cmdline
+BOOT_IMAGE=/boot/vmlinuz-5.4.0-31-generic root=/dev/mapper/vgvagrant-root ro net.ifnames=0 biosdevname=0 quiet
+```
+В данном примере:
+* загрузчик передал путь до образа, из которого ядро загружено;
+* на каком устройстве находится корневая файловая система;
+* монтировать корневую файловую систему в RO режиме во время загрузки;
+* параметры для подсистемы udev об именовании сетевых интерфейсов;
+* “тихая” загрузка без сообщений.
+
+Настройки загрузчика специфичны для дистрибутива. В Ubuntu изменить их можно через приведенный файл и запустив sudo update-grub.
+
+```commandline
+vagrant@netology1:~$ grep GRUB_CMDLINE_LINUX /etc/default/grub
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
+GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 "
+```
+Если доступа в загруженную ОС нет, параметры ядра можно поменять во время работы загрузчика через его сервисное меню (**init=/bin/sh** или **single** для **single user mode**).
+
+## Настройка ядра – sysctl
+Параметров ядра существуют больше тысячи - передавать их в командной строке и каждый раз перезагружаться неудобно. Для решения данной проблемы существует механизм sysctl.
+```commandline
+root@netology1:~# sysctl -a | grep 'v4.ip_forward '
+net.ipv4.ip_forward = 0
+root@netology1:~# sysctl -w net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+root@netology1:~# sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+```
+Внесенные таким образом изменения не сохранятся после перезагрузки. Чтобы сделать их персистентными, присутствует каталог **/etc/sysctl.d**. В дистрибутивах обычно ряд настроек заданы отличными от стандартных, поэтому ознакомьтесь с имеющимися там параметрами до внесения своих.
+```commandline
+root@netology1:~# grep -v '^#' /etc/sysctl.d/* | grep = | column -t | head -n2
+/etc/sysctl.d/10-console-messages.conf:kernel.printk = 4 4 1 7
+/etc/sysctl.d/10-ipv6-privacy.conf:net.ipv6.conf.all.use_tempaddr = 2
+```
+Применить изменения (без указания `-p` загрузит **/etc/sysctl.conf**):
+```commandline
+root@netology1:~# sysctl -p /etc/sysctl.d/10-ipv6-privacy.conf
+net.ipv6.conf.all.use_tempaddr = 1
+net.ipv6.conf.default.use_tempaddr = 2
+```
+
+## dmesg и syslog
+Два важных источника информации об ОС:
+1. `dmesg` – инструмент доступа к записям ядра. В `dmesg` (ключ -T – конвертировать время в человеко-читаемое) присутствует информация о загрузке ОС, об изменении состояния аппаратных ресурсов. Проблемы с дисками, отвалившиеся сетевые карты, ошибки при коррекции ошибок ECC – многие обращающие на себя внимание сообщения найдут свое место здесь.
+```commandline
+root@netology1:~# dmesg -T | tail -n2
+[19:27:11 2020] e1000: eth1 NIC Link is Up 1000 Mbps Full Duplex...
+[19:27:11 2020] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+```
+2. `syslog` – штатный логгер, куда попадают сообщения уже от приложений в юзерспейсе. Мест, куда приложения могут писать логи, – множество: от локальных файлов до сервисов вроде journald. Однако **/var/log/syslog** остается местом, куда стоит заглянуть при оценке состояния системы.
+
+# Системы инициализации:
+
+## systemd, init – PID 1, процессы ядра
+
+Мы узнали, что новые процессы в Linux создаются клонированием родительского процесса. Из этого правила есть понятное исключение – первый процесс в системе, который ядро создает самостоятельно и назначает ему PID 1, – init. 
+
+**init** – собирательное название для контроллера инициализации ОС, а не конкретная технология.
+
+Система инициализации отвечает за:
+* достижение корректного состояния на разных этапах загрузки;
+* запуска служб самой ОС и прикладных программ в нужном порядке;
+* монтирование файловых систем;
+* обратный процесс при выключении ОС;
+* init должен уметь “усыновлять” процессы, ставшие “сиротами”.
+
+**init** – не единственный процесс, который создан ядром. Процессы в `ps` в квадратных скобках – “ядерные” процессы, что видно по 0 размеру RSS памяти в юзер-спейсе.
+
+## systemd, systemctl
+Систем инициализации было разработано много, но стандарт для большинства популярных дистрибутивов сегодня – systemd.
+
+**systemd** многие критикуют за несоответствие философии Unix, согласно которой у программы должно быть единственное предназначение, которое она должна выполнять хорошо.
+
+**systemd** же, будучи системой инициализации, сегодня заменяет множественные сервисы ОС: логирование, планировщик задач cron, даже локальный кеширующий DNS и синхронизация времени есть в стандартной поставке, что вообще никак не связано с системой инициализации.
+
+Базовые команды:
+* `systemctl list-units --all` - (посмотреть все юниты под управлением systemd)
+* `systemctl status nginx.service` - (посмотреть статус работы сервиса) сразу же виден путь расположения юнит-файла, который отвечает за сервис (/lib/systemd/system/nginx.service в нашем случае)
+* `systemctl start/stop/restart/reload nginx` - (.service можно опустить если типа юнита один)
+* `systemctl enable/disable nginx` - (автозапуск сервиса включен/выключен)
+
+## journalctl, systemctl
+
+* `systemctl cat nginx.service`
+* `systemctl edit --full nginx.service`
+* `systemctl daemon-reload` - (перечитать измененные юнит-файлы самого systemd)
+* `systemctl list-dependencies nginx.service` - (посмотреть зависимости сервиса nginx)
+* `journalctl -b -u nginx.service` - (посмотреть логи сервиса nginx, которые были записаны с момента загрузки, b от boot)
+
+## Неймспейсы процессов
+
+Основная концепция контейнеров – **пространства имен**. Все, о чем мы с вами говорили, будь то командный интерпретатор bash, процессы-потомки, запущенные из него, – все это тоже находилось в пространстве имен по умолчанию.
+
+`lsns` - показать неймспейсы процессов
+
+Таким нехитрым образом можно организовать полностью изолированный от хостового неймспейс, в котором PID 1 будет иметь команда, которую мы запустили.
+```commandline
+root@netology1:~# screen
+root@netology1:~# unshare -f --pid --mount-proc /bin/bash
+root@netology1:~# ps aux
+USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+root 1 0.0 0.3 9836 3980 pts/0 S 07:29 0:00 /bin/bash
+root 8 0.0 0.3 11476 3316 pts/0 R+ 07:29 0:00 ps aux
+```
+Из хостового NS при этом наш процесс имеет совершенно обычный PID:
+```commandline
+root 237934 0.0 0.0 8080 596 pts/3 S 07:30 0:00 \_ unshare -f --pid…
+root 237935 0.0 0.3 9836 4012 pts/3 S+ 07:30 0:00 \_ /bin/bash
+```
+Имея привилегии, можно “зайти” в этот namespace с хоста:
+```commandline
+root@netology1:~# nsenter --target 237935 --pid --mount
+root@netology1:/# ps aux
+USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+root 1 0.0 0.3 9836 4012 pts/3 S+ 07:30 0:00 /bin/bash
+root 28 0.0 0.4 9836 4168 pts/0 S 07:38 0:00 -bash
+root 37 0.0 0.3 11476 3396 pts/0 R+ 07:38 0:00 ps aux
+```
