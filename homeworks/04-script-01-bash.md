@@ -130,12 +130,10 @@ done
 #!/usr/bin/env bash
 
 commit_len=`wc -m < "$1"`
-echo $count
 
 if [ $commit_len -ge 30 ]
 then
   echo Длина коммита $commit_len символов, а должна быть не более 30 символов.
-  echo $count
   exit 1
 fi
 
