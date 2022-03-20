@@ -195,11 +195,11 @@ def exec_commands(bash_command):
         res = subprocess.Popen([' && '.join(bash_command)], stdout=subprocess.PIPE, shell=True)
     except OSError:
         print("error: popen")
-        exit(-1)  # if the subprocess call failed, there's not much point in continuing
+        exit(1)  # if the subprocess call failed, there's not much point in continuing
     res.wait()
     if res.returncode != 0:
         print("  os.wait:exit status != 0\n")
-        exit(-1)
+        exit(1)
     else:
         print(f'os.wait:({res.pid},{res.returncode})')
 
