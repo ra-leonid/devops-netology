@@ -69,6 +69,7 @@ yc iam key create --service-account-name robot --output key.json
 14. Запускаем создание ВМ с помощью terraform
 ```commandline
 terraform init
+terraform validate
 terraform plan
 terraform apply -auto-approve
 ```
