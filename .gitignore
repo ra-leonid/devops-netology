@@ -4,3 +4,5 @@
 **/terraform/key.json
 *.tfstate
 *.tfstate.*
+**/pgdata?/
+**/backup/*

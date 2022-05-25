@@ -1,0 +1,25 @@
+version: '3.3'
+
+networks:
+  postgres:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./backup:/media/postgresql/backup
+    networks:
+      - postgres
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - postgres

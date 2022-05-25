@@ -1,0 +1,28 @@
+version: '3.3'
+
+networks:
+  postgres:
+    driver: bridge
+
+services:
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      # POSTGRES_DB: "test_db"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./backup:/media/postgresql/backup
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    networks:
+      - postgres
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - postgres
