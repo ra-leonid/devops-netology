@@ -42,3 +42,17 @@ docker exec -it psql bash -c "psql -U postgres test_db < /media/postgresql/backu
 docker exec -it 3_db_1 bash -c "pg_dumpall -U postgres > /media/postgresql/backup/test_db_$(date '+%Y-%m-%d-%H-%M-%S').sql"
 
 docker exec -it psql bash -c "psql -U postgres -f /media/postgresql/backup/test_db_2022-05-25-22-15-58.sql postgres"
+
+docker exec -it src_db_1 bash
+
+sudo rm -Rf data
+mkdir data
+
+SET old_passwords=0;
+
+CREATE USER 'test'@'localhost' 
+IDENTIFIED WITH mysql_native_password BY 'test-pass'
+WITH MAX_QUERIES_PER_HOUR 100 
+PASSWORD EXPIRE INTERVAL 180 DAY 
+FAILED_LOGIN_ATTEMPTS 3
+ATTRIBUTE '{"fname": "Pretty", "lname": "James"}';

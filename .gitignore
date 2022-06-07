@@ -6,3 +6,5 @@
 *.tfstate.*
 **/pgdata?/
 **/backup/*
+**/data/*
+**/secrets/*
