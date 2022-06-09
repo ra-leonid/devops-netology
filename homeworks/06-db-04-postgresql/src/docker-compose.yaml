@@ -4,17 +4,16 @@ version: '3.3'
 services:
 
   db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
+    image: postgres:13
     restart: unless-stopped
     environment:
-      #MYSQL_ROOT_PASSWORD: example
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/pass.pwd
-      MYSQL_DATABASE: test_db
+      POSTGRES_PASSWORD_FILE: /run/secrets/pass.pwd
+      POSTGRES_DB: test_database
     volumes:
-      - ./data:/var/lib/mysql
+      - ./data:/var/lib/postgresql/data
       - ./secrets:/run/secrets
       - ./initdb.d:/docker-entrypoint-initdb.d
+      - ./backup:/media/postgresql/backup
 
   adminer:
     image: adminer

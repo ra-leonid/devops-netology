@@ -45,8 +45,7 @@ docker exec -it psql bash -c "psql -U postgres -f /media/postgresql/backup/test_
 
 docker exec -it src_db_1 bash
 
-sudo rm -Rf data
-mkdir data
+sudo rm -Rf data && mkdir data
 
 SET old_passwords=0;
 
@@ -56,3 +55,27 @@ WITH MAX_QUERIES_PER_HOUR 100
 PASSWORD EXPIRE INTERVAL 180 DAY 
 FAILED_LOGIN_ATTEMPTS 3
 ATTRIBUTE '{"fname": "Pretty", "lname": "James"}';
+
+select attname, avg_width from pg_stats where tablename='orders';
+
+SELECT t1.attname, t1.avg_width 
+FROM pg_stats t1
+JOIN (
+    SELECT max(avg_width) max_avg 
+    FROM pg_stats 
+    WHERE tablename='orders') t2
+ON t1.avg_width = t2.max_avg 
+WHERE t1.tablename='orders';
+
+CREATE TABLE orders_1 (CHECK (price>499)) INHERITS (orders);
+CREATE TABLE orders_2 (CHECK (price<=499)) INHERITS (orders);
+CREATE RULE orders_1_rule AS ON INSERT TO orders WHERE (price>499) DO INSTEAD INSERT INTO orders_1 VALUES (NEW.*);
+CREATE RULE orders_2_rule AS ON INSERT TO orders WHERE (price<=499) DO INSTEAD INSERT INTO orders_2 VALUES (NEW.*);
+
+docker exec -it src_db_1 bash -c "pg_dump -U postgres test_database > /media/postgresql/backup/test_db_$(date '+%Y-%m-%d-%H-%M-%S').sql"
+
+pg_restore -U postgres /media/postgresql/backup/test_db_2022-06-09-21-30-29.sql -d test_database
+psql -U postgres -d test_database -f /media/postgresql/backup/test_db_2022-06-09-21-30-29.sql
+
+psql -U postgres test_database < /media/postgresql/backup/test_db_2022-06-09-21-30-29.sql
+psql -U postgres test_database < /docker-entrypoint-initdb.d/test_db_2022-06-09-21-30-29.sql
