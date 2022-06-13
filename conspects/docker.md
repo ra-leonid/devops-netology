@@ -79,3 +79,58 @@ psql -U postgres -d test_database -f /media/postgresql/backup/test_db_2022-06-09
 
 psql -U postgres test_database < /media/postgresql/backup/test_db_2022-06-09-21-30-29.sql
 psql -U postgres test_database < /docker-entrypoint-initdb.d/test_db_2022-06-09-21-30-29.sql
+
+
+docker image build -t raleonid/elasticsearch:7 .
+
+sudo docker pull elasticsearch:7.17.4
+
+docker network create somenetwork
+
+sudo docker run -d --name elasticsearch1 --net somenetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.17.4
+
+sudo docker exec -it elasticsearch bash
+
+ll -la /etc/elasticsearch
+
+sudo docker image build -t raleonid/elasticsearch:7.17.4 .
+
+sudo docker stop elasticsearch1
+sudo docker rm elasticsearch
+sudo docker run -d --name elasticsearch --net somenetwork -v ./data:/var/lib -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" raleonid/elasticsearch:7.17.4
+
+sudo docker logs elasticsearch
+
+sudo docker run --rm -d --name elasticsearch --net somenetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -v /media/andr/90391f22-676d-469f-8cb3-7ac8a1760393/git/devops-netology/homeworks/06-db-05-elasticsearch/src/data:/var/lib/data raleonid/elasticsearch:7.17.4
+
+sudo docker system prune -a
+sudo docker images -a
+sudo docker rmi Image raleonid/elasticsearch:7.17.4
+
+sudo docker image push raleonid/elasticsearch:7.17.4
+
+curl -X GET "localhost:9200/_cat/nodes?v&pretty"
+
+Создание индексов:
+curl -X PUT "localhost:9200/my-index-000001?pretty"
+
+curl -X PUT "localhost:9200/ind-1?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,  
+      "number_of_replicas": 0 
+    }
+  }
+}
+'
+
+Состояние индексов:
+curl -X GET "localhost:9200/_cat/indices"
+
+sudo docker run --rm -d --name elasticsearch --net somenetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -v /media/andr/90391f22-676d-469f-8cb3-7ac8a1760393/git/devops-netology/homeworks/06-db-05-elasticsearch/src/data:/var/lib/data -v /media/andr/90391f22-676d-469f-8cb3-7ac8a1760393/git/devops-netology/homeworks/06-db-05-elasticsearch/src/snapshots:/usr/share/elasticsearch/snapshots raleonid/elasticsearch:7.17.4
+
+# PUT _snapshot/my_repository/<my_snapshot_{now/d}>
+curl -X PUT "localhost:9200/_snapshot/my_repository/%3Cmy_snapshot_%7Bnow%2Fd%7D%3E?pretty"
+
+"reason" : "cannot restore index because an open index with same name already exists in the cluster. Either close or delete the existing index or restore the index under a different name by providing a rename pattern and replacement name"
