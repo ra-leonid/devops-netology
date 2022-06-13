@@ -9,3 +9,4 @@
 **/data/*
 **/secrets/*
 *.sql
+**/snapshots/
