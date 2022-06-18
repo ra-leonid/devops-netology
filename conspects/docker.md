@@ -137,3 +137,13 @@ curl -X PUT "localhost:9200/_snapshot/my_repository/%3Cmy_snapshot_%7Bnow%2Fd%7D
 
 
 cannot restore index because an open index with same name already exists in the cluster. Either close or delete the existing index or restore the index under a different name by providing a rename pattern and replacement name
+
+torsocks wget -qO - https://api.ipify.org; echo
+wget -qO - https://api.ipify.org; echo
+
+sudo service privoxy restart
+sudo service tor restart
+
+sudo service tor stop
+sudo service privoxy stop
+
