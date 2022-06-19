@@ -143,7 +143,9 @@ wget -qO - https://api.ipify.org; echo
 
 sudo service privoxy restart
 sudo service tor restart
+sudo service privoxy start && sudo service tor start
 
 sudo service tor stop
 sudo service privoxy stop
+sudo systemctl stop tinyproxy.service
 

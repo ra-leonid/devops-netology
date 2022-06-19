@@ -88,3 +88,28 @@ ansible-playbook provision.yml
 terraform destroy -auto-approve
 yc compute image delete --name centos-7-base
 ```
+
+Получить список образов Яндекс:
+```commandline
+yc compute image list --folder-id standard-images
+```
+
+Для автоматического подхватывания токена, и ID сети, и чтобы не хранить их в коде, их можно передать через локальные переменные.
+Получить эти значения, можно выполнив команду:
+
+```commandline
+yc config list
+```
+
+Результат подставляем в переменные:
+```commandline
+export TF_VAR_yc_token=
+export TF_VAR_yc_cloud_id=
+```
+
+Terraform читает переменные, и все, которые начинаются с `TF_` переносит к себе, отбрасывая этот префикс.
+
+Подключение к ВМ:
+```commandline
+ssh 51.250.78.141 -l centos
+```
