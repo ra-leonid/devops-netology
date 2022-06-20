@@ -48,6 +48,10 @@ provider_installation {
 10. Создаем сервисный аккаунт в облаке:
 ```commandline
 yc iam service-account create --name robot --description "this is my favorite service account"
+
+# либо
+yc iam service-account create --name robot --folder-name default --description "service account"
+yc iam service-account create --name robot --folder-id b1gradps4tqg50qntprp --description "service account"
 ```
 11. Назначаем ему роли
 ```commandline
@@ -55,13 +59,19 @@ yc iam service-account create --name robot --description "this is my favorite se
 yc iam service-account list
 
 # назначаем роль editor
-yc resource-manager folder add-access-binding b1gtqtpml2gtf83tmea7 --role editor --subject serviceAccount:ajepd2fsq0pb9msrn8ft
+yc resource-manager folder add-access-binding b1gradps4tqg50qntprp --role editor --subject serviceAccount:ajero42nm28dhqlvvorn
 ```
 12. Переходим в каталог terraform и создаем файл авторизации:
 ```commandline
 cd ~/PycharmProjects/devops-netology/05-virt-04-docker-compose/src/terraform/
 
-yc iam key create --service-account-name robot --output key.json
+yc iam key create --service-account-name robot --output .key.json
+yc iam key create --folder-id b1gradps4tqg50qntprp --service-account-name robot --output .key.json
+```
+
+12.1. Создаем статические ключи доступа
+```commandline
+yc iam access-key create --folder-id b1gradps4tqg50qntprp --service-account-name robot
 ```
 
 13. Заполняем параметры в файле variables.tf
@@ -71,7 +81,7 @@ yc iam key create --service-account-name robot --output key.json
 terraform init
 terraform validate
 terraform plan
-terraform apply -auto-approve
+terraform123 apply -auto-approve
 ```
 15. Переходим в каталог ansible
 ```commandline
@@ -107,7 +117,7 @@ export TF_VAR_yc_token=
 export TF_VAR_yc_cloud_id=
 ```
 
-Terraform читает переменные, и все, которые начинаются с `TF_` переносит к себе, отбрасывая этот префикс.
+Terraform читает переменные, и все, которые начинаются с `TF_VAR_` переносит к себе, отбрасывая этот префикс.
 
 Подключение к ВМ:
 ```commandline

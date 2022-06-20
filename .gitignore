@@ -10,3 +10,4 @@
 **/secrets/*
 *.sql
 **/snapshots/
+**/bucket.tf
