@@ -34,6 +34,7 @@ dynamodb.
 ![](../img/07-terraform-03-basic-1.png)
 
 ```commandline
+terraform123 init -reconfigure -backend-config=./secrets/backend.conf
 terraform123 plan
 module.vpc.data.yandex_compute_image.nat_instance: Reading...
 module.vpc.data.yandex_compute_image.nat_instance: Read complete after 2s [id=***]
