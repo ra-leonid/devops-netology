@@ -14,22 +14,60 @@ yc vpc subnet create --name my-subnet-a --zone ru-central1-a --range 10.1.2.0/24
 ```commandline
 yc config list
 ```
-5. В настройках файла packer заполняем значение token folder_id subnet_id zone
+5. Чтобы получить список доступных образов, выполните следующую команду:
+```commandline
+yc compute image list --folder-id standard-images
+```
+6. Создание ВМ с командной строки:
+```commandline
+yc compute instance create \
+  --name centos7 \
+  --zone ru-central1-a \
+  --network-interface subnet-name=my-subnet-a,nat-ip-version=ipv4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=centos-7 \
+  --ssh-key ~/.ssh/id_rsa.pub
+```
 
-6. Создаем образ с помощью packer:
+```commandline
+yc compute instance create \
+  --name ubuntu \
+  --zone ru-central1-a \
+  --network-interface subnet-name=my-subnet-a,nat-ip-version=ipv4 \
+  --create-boot-disk image-folder-id=standard-images,image-family=ubuntu-2004-lts \
+  --ssh-key ~/.ssh/id_rsa.pub
+```
+6. Получить список ВМ:
+```commandline
+yc compute instance list
+```
+7. Информация о ВМ:
+```commandline
+yc compute instance get centos7
+```
+8. Подключиться 
+```commandline
+ssh -i ~/.ssh/id_rsa yc-user@51.250.91.115
+ssh yc-user@51.250.8.89
+```
+8. Удалить ВМ
+```commandline
+yc compute instance delete centos7 && yc compute instance delete ubuntu
+```
+9. В настройках файла packer заполняем значение token folder_id subnet_id zone
+10. Создаем образ с помощью packer:
 ```commandline
 cd ~/PycharmProjects/devops-netology/05-virt-04-docker-compose/src/packer/
 packer build centos-7-base.json
 ```
-7. Вывод параметров образа
+9. Вывод параметров образа
 ```commandline
 yc compute image list
 ```
-8. Удаление подсети и сети:
+10. Удаление подсети и сети:
 ```commandline
 yc vpc subnet delete --name my-subnet-a && yc vpc network delete --name net
 ```
-9. Чтобы не испытывать проблем с ограничениями Hashicorp, переопределяем обращения terraform к репо yc
+11. Чтобы не испытывать проблем с ограничениями Hashicorp, переопределяем обращения terraform к репо yc
 ```commandline
 # создаем файл ~/.terraformrc
 nano ~/.terraformrc
@@ -45,7 +83,7 @@ provider_installation {
   }
 }
 ```
-10. Создаем сервисный аккаунт в облаке:
+12. Создаем сервисный аккаунт в облаке:
 ```commandline
 yc iam service-account create --name robot --description "this is my favorite service account"
 
@@ -53,7 +91,7 @@ yc iam service-account create --name robot --description "this is my favorite se
 yc iam service-account create --name robot --folder-name default --description "service account"
 yc iam service-account create --name robot --folder-id b1gradps4tqg50qntprp --description "service account"
 ```
-11. Назначаем ему роли
+13. Назначаем ему роли
 ```commandline
 # узнаем id
 yc iam service-account list
@@ -61,7 +99,7 @@ yc iam service-account list
 # назначаем роль editor
 yc resource-manager folder add-access-binding b1gradps4tqg50qntprp --role editor --subject serviceAccount:ajero42nm28dhqlvvorn
 ```
-12. Переходим в каталог terraform и создаем файл авторизации:
+14. Переходим в каталог terraform и создаем файл авторизации:
 ```commandline
 cd ~/PycharmProjects/devops-netology/05-virt-04-docker-compose/src/terraform/
 
@@ -69,31 +107,31 @@ yc iam key create --service-account-name robot --output .key.json
 yc iam key create --folder-id b1gradps4tqg50qntprp --service-account-name robot --output .key.json
 ```
 
-12.1. Создаем статические ключи доступа
+15. Создаем статические ключи доступа
 ```commandline
 yc iam access-key create --folder-id b1gradps4tqg50qntprp --service-account-name robot
 ```
 
-13. Заполняем параметры в файле variables.tf
+16. Заполняем параметры в файле variables.tf
 
-14. Запускаем создание ВМ с помощью terraform
+17. Запускаем создание ВМ с помощью terraform
 ```commandline
 terraform init
 terraform validate
 terraform plan
 terraform123 apply -auto-approve
 ```
-15. Переходим в каталог ansible
+18. Переходим в каталог ansible
 ```commandline
 cd ../ansible
 ```
-16. В файле inventory заполняем внешний ip созданной ВМ.
-17. Выполняем установку ПО в созданной ВМ
+19. В файле inventory заполняем внешний ip созданной ВМ.
+20. Выполняем установку ПО в созданной ВМ
 ```commandline
 cd ../ansible
 ansible-playbook provision.yml
 ```
-18. Удаляем всё что создали:
+21. Удаляем всё что создали:
 ```commandline
 terraform destroy -auto-approve
 yc compute image delete --name centos-7-base
