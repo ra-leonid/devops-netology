@@ -1,16 +1,60 @@
+# Установка Docker
+
+```commandline
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+sudo apt update
+# Убедитесь, что установка будет выполняться из репозитория Docker, а не из репозитория Ubuntu по умолчанию:
+apt-cache policy docker-ce
+sudo apt install docker-ce
+# Docker должен быть установлен, демон-процесс запущен, а для процесса активирован запуск при загрузке. Проверьте, что он запущен:
+sudo systemctl status docker
+# Проверка версии docker
+docker version
+```
+
+# Удаление docker
+
+```commandline
+# определяем какие пакеты нужно удалить
+dpkg -l | grep -i docker
+
+sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli docker-compose-plugin
+sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce docker-compose-plugin
+
+sudo rm -rf /var/lib/docker /etc/docker
+sudo rm /etc/apparmor.d/docker
+sudo groupdel docker
+sudo rm -rf /var/run/docker.sock
+```
+
+# Установка последней версии docker-compose
+```commandline
+VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+DESTINATION=/usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+sudo chmod 755 $DESTINATION
+echo $VERSION
+
+```
+
 docker-compose -f docker-compose.yaml up
 docker exec -it 2_db_1 bash
 docker exec -it 2_adminer_1 bash
 docker exec -it 3_db_1 bash
 docker ps
 docker-compose pull
-docker-compose up -d
+docker-compose up -d - запуск контейнеров в фоновом режиме
 docker-compose stop
 docker-compose down
 docker-compose down --rmi all
 
 docker-compose ps --a
 docker-compose restart
+
+### Вы можете проверить работающий контейнер, чтобы получить эту информацию:
+sudo docker container inspect container_name_or_ID
 
 
 psql -U postgres
