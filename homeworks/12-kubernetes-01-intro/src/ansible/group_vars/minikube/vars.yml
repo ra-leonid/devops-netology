@@ -1,0 +1,4 @@
+---
+kubectl_version: v1.25.3
+cri_dockerd_version: 0.2.6
+crictl_version: 1.25.0

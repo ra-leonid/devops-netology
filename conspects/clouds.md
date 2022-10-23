@@ -119,7 +119,7 @@ yc iam access-key create --folder-id b1gradps4tqg50qntprp --service-account-name
 terraform init
 terraform validate
 terraform plan
-terraform123 apply -auto-approve
+terraform apply -auto-approve
 ```
 18. Переходим в каталог ansible
 ```commandline
