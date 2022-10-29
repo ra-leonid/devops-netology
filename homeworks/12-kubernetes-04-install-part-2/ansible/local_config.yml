@@ -1,0 +1,21 @@
+---
+- name: Copy "~/.kube/config"
+  hosts: kube_control_plane
+  tasks:
+    - name: Store config
+      become: true
+      ansible.builtin.fetch:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "~/.kube/config"
+        flat: true
+        mode: "755"
+
+- name: Change local "~/.kube/config"
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Replace the internal ip with an external one
+      ansible.builtin.replace:
+        path: ~/.kube/config
+        regexp: "127.0.0.1"
+        replace: "{{ hostvars['kube_control_plane'].ansible_host }}"
