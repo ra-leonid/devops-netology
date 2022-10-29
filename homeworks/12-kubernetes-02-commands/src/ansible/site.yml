@@ -1,0 +1,187 @@
+---
+- name: Install minikube
+  hosts: minikube
+  handlers:
+    - name: Remove file (delete file)
+      become: true
+      ansible.builtin.file:
+        path: /tmp/juju-*
+        state: absent
+      listen: "start minikube service"
+
+    - name: Minikube status
+      ansible.builtin.command: minikube status
+      register: minikube_status
+      listen: "start minikube service"
+      ignore_errors: true
+    - name: Minikube delete
+      ansible.builtin.command: minikube delete
+      listen: "start minikube service"
+      ignore_errors: true
+
+    - name: Start minikube
+      #ansible.builtin.command: "minikube start --vm-driver=docker --apiserver-ips={{ ansible_host }} --bootstrapper=kubeadm --network-plugin=cni --enable-default-cni --container-runtime=containerd"
+      ansible.builtin.command: >
+        minikube start
+        --vm-driver=docker
+        --apiserver-ips={{ ansible_host }}
+        --bootstrapper=kubeadm
+        --network-plugin=cni
+        --enable-default-cni
+        --container-runtime=containerd
+      register: start_minikube
+      listen: "start minikube service"
+      when: minikube_status.rc != 0
+      failed_when: start_minikube.rc != 0
+      changed_when: start_minikube.rc == 0
+    - name: Start minikube the ingress and dashboard addons
+      ansible.builtin.command: minikube {{ item }}
+      listen: "start minikube service"
+      when: minikube_status.rc != 0
+      with_items:
+        - addons enable ingress
+        - addons enable dashboard
+
+    - name: Start cri-docker service
+      become: true
+      ansible.builtin.service:
+        name: cri-docker
+        state: reloaded
+        enabled: true
+
+    - name: Restart nginx service
+      become: true
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: nginx
+
+  tasks:
+    - name: Install deb packages
+      become: true
+      ansible.builtin.apt:
+        update_cache: true
+        pkg:
+          - docker.io
+          - conntrack
+          - nginx
+    - name: Ensure group "docker" exists
+      ansible.builtin.group:
+        name: docker
+        state: present
+    - name: adding existing user '{{ ansible_user }}' to docker group
+      become: true
+      user:
+        name: '{{ ansible_user }}'
+        groups: docker
+        append: true
+    - name: Reset ssh connection to allow user changes to affect ansible user
+      ansible.builtin.meta: reset_connection
+    - name: Wait for server to restart
+      wait_for:
+        port=22
+        delay=1
+        timeout=40
+    - name: Add br_netfilter module
+      become: true
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+    - name: Add a params to a file '/etc/sysctl.conf'
+      become: true
+      ansible.posix.sysctl:
+          name: "{{ item }}"
+          value: '1'
+          sysctl_set: true
+          state: present
+          reload: true
+      with_items:
+        - net.ipv4.ip_forward
+        - net.bridge.bridge-nf-call-iptables
+        - net.bridge.bridge-nf-call-arptables
+        - net.bridge.bridge-nf-call-ip6tables
+    - name: Install crictl
+      become: true
+      unarchive:
+        src: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ crictl_version }}/crictl-v{{ crictl_version }}-linux-amd64.tar.gz"
+        dest: /usr/local/bin
+        remote_src: true
+        mode: "755"
+        extra_opts:
+          - crictl
+        validate_certs: false
+    - name: Extract cri-dockerd archive
+      become: true
+      unarchive:
+        src: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.amd64.tgz"
+        dest: /usr/local/bin
+        remote_src: true
+        extra_opts: [--strip-components=1]
+        mode: "755"
+      notify: Start cri-docker service
+    - name:  cri-dockerd daemon configurated
+      become: true
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "/etc/systemd/system/{{ item }}"
+      with_items:
+        - cri-docker.service
+        - cri-docker.socket
+      notify: Start cri-docker service
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+    - name: Get kubectl distrib
+      become: true
+      ansible.builtin.get_url:
+        url: "https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+        dest: "/usr/local/bin"
+        mode: 0755
+      notify: start minikube service
+    - name: Get minikube distrib
+      become: true
+      ansible.builtin.get_url:
+        url: "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64"
+        dest: "/usr/local/bin/minikube"
+        mode: 0755
+      notify: start minikube service
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+    - name: Store config & cert files
+      ansible.builtin.fetch:
+        src: "{{ item }}"
+        dest: "{{ item }}"
+        flat: true
+      with_items:
+        - ~/.kube/config
+        - ~/.minikube/ca.crt
+        - ~/.minikube/ca.key
+        - ~/.minikube/profiles/minikube/client.crt
+        - ~/.minikube/profiles/minikube/client.key
+    - name: Get minikube IP
+      ansible.builtin.command: minikube ip
+      register: minikube_ip
+      changed_when: false
+    - name:  Nginx daemon configurated
+      become: true
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: Restart nginx service
+
+- name: Install minikube
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Replace the internal ip with an external one
+      ansible.builtin.replace:
+        path: ~/.kube/config
+        regexp: "{{ hostvars['minikube1']['minikube_ip']['stdout'] }}"
+        replace: "{{ hostvars['minikube1'].ansible_host }}"
+    - name: Replace the internal ip with an external one
+      ansible.builtin.replace:
+        path: ~/.kube/config
+        regexp: "{{ hostvars['minikube1'].ansible_user_dir }}"
+        replace: "{{ ansible_user_dir }}"
+    - name: Print connect command
+      debug:
+        msg: "ssh {{ hostvars['minikube1'].ansible_user }}@{{ hostvars['minikube1'].ansible_host }}"
