@@ -22,6 +22,18 @@
 
 Количество инстансов control_plane и node задается параметрами `control_plane_instance_count` и `slave_node_instance_count` в файле `./terraform/variables.tf` соответственно.
 
+* CRI — containerd по умолчанию
+
+![](img/1.png)
+
+* etcd запущена на control_plane
+
+![](img/2.png)
+
+* Количество нод 5, из них 1 control_plane
+
+![](img/3.png)
+
 
 ---
 
