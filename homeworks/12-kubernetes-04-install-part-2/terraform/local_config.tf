@@ -6,6 +6,6 @@ resource "null_resource" "local_config" {
   }
 
   depends_on = [
-    null_resource.kuberspray
+    null_resource.kubespray
   ]
 }
