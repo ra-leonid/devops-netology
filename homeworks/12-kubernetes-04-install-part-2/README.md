@@ -13,12 +13,12 @@
 * работать должны на минимально допустимых EC2 — t3.small.
 
 ### Решение:
-Запуск сборки кластера осуществляется командой `terraform apply -auto-approve` из каталога `./terraform`. Terraform динамический инвентарь и сохраняет его в `./kubespray/inventory/mycluster/hosts.yaml`. Код сборки инвентаря в `./terraform/inventory.tf`, шаблон - `./terraform/templates/hosts.tpl`.
+Запуск сборки кластера осуществляется командой `terraform apply -auto-approve` из каталога `./terraform`. Terraform собирает динамический инвентарь и сохраняет его в `./kubespray/inventory/mycluster/hosts.yaml`. Код сборки инвентаря в `./terraform/inventory.tf`, шаблон - `./terraform/templates/hosts.tpl`. Также собирается динамический инвентарь для выполнения на локальной машине, который сохраняется по пути `./ansible/inventory.yml`.
 
 После создания инфраструктуры кластера, автоматически стартует kuberspray (код запуска в `./terraform/kuberspray.tf`).
 Переменная `supplementary_addresses_in_ssl_keys` задается в параметрах запуска ansible, так что её перед запуском также не нужно устанавливать.
 
-После kuberspray стартует `./terraform/local_config.tf`, который копирует и настраивает `.kube/config` на локальной машине. Т.о., после выполнения скрипта, можно сразу приступать к работе с ним с локальной машины.
+После kuberspray стартует `./terraform/local_config.tf`, который копирует и настраивает `.kube/config` на локальной машине. Т.о., после выполнения скрипта, можно сразу приступать к работе с ним на локальной машине.
 
 Количество инстансов control_plane и node задается параметрами `control_plane_instance_count` и `slave_node_instance_count` в файле `./terraform/variables.tf` соответственно.
 
