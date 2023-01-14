@@ -1,0 +1,132 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: raleonid/frontend
+          ports:
+            - containerPort: 80
+              name: f-port
+              protocol: TCP
+          env:
+            - name: BASE_URL
+              value: "http://backend:9000"
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: prod
+spec:
+  ports:
+    - name: frontend
+      port: 8000
+      targetPort: 80
+  selector:
+    app: frontend
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: raleonid/backend
+          ports:
+            - containerPort: 9000
+              name: b-port
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@db:5432/news"
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: prod
+spec:
+  ports:
+    - name: backend
+      port: 9000
+  selector:
+    app: backend
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13-alpine
+          ports:
+            - containerPort: 5432
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: news
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: prod
+spec:
+  ports:
+    - name: db
+      port: 5432
+  selector:
+    app: db
+  type: ClusterIP

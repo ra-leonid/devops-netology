@@ -1,0 +1,6 @@
+---
+all:
+  hosts:
+    kube_control_plane:
+     ansible_host: 51.250.89.40
+     ansible_user: ubuntu

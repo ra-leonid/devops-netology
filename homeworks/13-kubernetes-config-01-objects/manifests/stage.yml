@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fb-stage
+  name: fb-stage
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fb-stage
+  template:
+    metadata:
+      labels:
+        app: fb-stage
+    spec:
+      containers:
+        - name: frontend
+          image: raleonid/frontend
+          ports:
+            - containerPort: 80
+              name: f-port
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+        - name: backend
+          image: raleonid/backend
+          ports:
+            - containerPort: 9000
+              name: b-port
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+  namespace: stage
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13-alpine
+          ports:
+            - containerPort: 5432
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: news
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: stage
+spec:
+  ports:
+    - name: db
+      port: 5432
+  selector:
+    app: db
+  type: ClusterIP
