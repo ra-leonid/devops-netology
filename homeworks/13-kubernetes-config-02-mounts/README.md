@@ -4,6 +4,12 @@
 * установить helm: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 * добавить репозиторий чартов: helm repo add stable https://charts.helm.sh/stable && helm repo update
 * установить nfs-server через helm: helm install nfs-server stable/nfs-server-provisioner
+---
+Был установлен более новый nfs-server-provisioner
+```commandline
+$ helm repo add nfs-ganesha-server-and-external-provisioner https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+$ helm install my-release nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
+```
 
 В конце установки будет выдан пример создания PVC для этого сервера.
 

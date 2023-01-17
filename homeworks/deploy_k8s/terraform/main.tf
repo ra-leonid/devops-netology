@@ -51,7 +51,7 @@ locals {
   }
   disk_size = {
     control_plane = 50
-    node = 100
+    node = 200
   }
   memory = {
     control_plane = 2

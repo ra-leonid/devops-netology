@@ -63,15 +63,27 @@
 * в окружении бекенда прописан адрес сервиса базы данных.
 
 ## Ответ:
+Предварительно устанавливаем nfs-server-provisioner:
+```commandline
+$ helm repo add nfs-ganesha-server-and-external-provisioner https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+$ helm install my-release nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
+```
+---
 1. Создаем новый `namespace`
    ```commandline
    kubectl create namespace prod
    ```
-2. Деплоим приложение:
+2. Деплоим PersistentVolume, PersistentVolumeClaim
+   ```commandline
+   kubectl apply -f ./manifests/pv-10mi-nfc.yml
+   kubectl apply -f ./manifests/pvc.yml
+   ```
+
+3. Деплоим приложение:
    ```commandline
    kubectl apply -f ./manifests/prod.yml
    ```
-3. Результат:
+4. Результат:
    ```commandline
    kubectl -n prod get all -o wide
    ```

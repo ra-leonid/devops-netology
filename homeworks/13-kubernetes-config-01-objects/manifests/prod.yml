@@ -21,8 +21,6 @@ spec:
           image: raleonid/frontend
           ports:
             - containerPort: 80
-              name: f-port
-              protocol: TCP
           env:
             - name: BASE_URL
               value: "http://backend:9000"
@@ -66,8 +64,6 @@ spec:
           image: raleonid/backend
           ports:
             - containerPort: 9000
-              name: b-port
-              protocol: TCP
           env:
             - name: DATABASE_URL
               value: "postgres://postgres:postgres@db:5432/news"
@@ -117,6 +113,13 @@ spec:
               value: postgres
             - name: POSTGRES_DB
               value: news
+          volumeMounts:
+            - mountPath: "/var/lib/postgresql/data"
+              name: pgdata
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: my-pvc
 ---
 apiVersion: v1
 kind: Service

@@ -21,6 +21,7 @@ kubectl get pods -n=kube-system
 # Получить список подов с отбором по label:
 kubectl get pods --selector app=main
 kubectl get pods -l app=main
+kubectl -n prod get po -l 'app in (backend, frontend)'
 
 # Получить список подов с выводом подробной информации:
 kubectl get pods -o wide
