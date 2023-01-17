@@ -14,6 +14,8 @@ kubectl get pods
 # Получить список всех подов включая служебные в текущем namespace:
 kubectl get pods -A
 
+kubectl get po,pv,pvc,sts,storageclass -o wide
+
 # Получить список подов в namespace kube-system:
 kubectl get pods --namespace=kube-system
 kubectl get pods -n=kube-system
@@ -52,8 +54,13 @@ kubectl get deployments
 # Развернуть деплоймент из манифеста
 kubectl apply -f ../manifests/nginx.yml
 
+# Удалить все ресурсы созданные манифестом
+kubectl delete -f ../manifests/nginx.yml
+
 # Изменить манифест деплоймента:
 kubectl edit deployment hello-node
+kubectl delete deployment,pvc,pv,storageclass --all
+kubectl delete pvc --all
 
 # Изменить манифест деплоймента командой (здесь мы изменяем количество реплик на 5):
 kubectl scale deploy hello-node -n default --replicas=5
