@@ -103,17 +103,22 @@ yc resource-manager folder add-access-binding b1gradps4tqg50qntprp --role editor
 ```commandline
 cd ~/PycharmProjects/devops-netology/05-virt-04-docker-compose/src/terraform/
 
-yc iam key create --service-account-name robot --output .key.json
-yc iam key create --folder-id b1gradps4tqg50qntprp --service-account-name robot --output .key.json
+yc iam key create --service-account-name editor --output .key.json
+yc iam key create --folder-id b1gradps4tqg50qntprp --service-account-name editor --output .key.json
 ```
 
 15. Создаем статические ключи доступа
 ```commandline
-yc iam access-key create --folder-id b1gradps4tqg50qntprp --service-account-name robot
+yc iam access-key create --folder-id b1gradps4tqg50qntprp --service-account-name editor
 ```
 
 16. Заполняем параметры в файле variables.tf
-
+16.1. Сначала загрузка параметров выполняется из файла terraform.tfvars в нем и указываем все секретные параметры, которые не должны версионироваться
+```text
+yc_token = "xxx"
+yc_cloud_id = "xxx"
+yc_folder_id = "xxx"
+```
 17. Запускаем создание ВМ с помощью terraform
 ```commandline
 terraform init

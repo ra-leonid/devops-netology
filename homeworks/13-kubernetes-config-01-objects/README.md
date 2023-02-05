@@ -32,7 +32,8 @@
       2. Фиксим ошибку добавив в [Dockerfile](./13-kubernetes-config/frontend) строки: 
       ```dockerfile
       ENV NODE_OPTIONS="--openssl-legacy-provider"
-      RUN npx browserslist@latest --update-db
+      #RUN npx browserslist@latest --update-db && chmod -R a+x /app/node_modules && npm run build && rm -rf /app/node_modules
+      RUN chmod -R a+x /app/node_modules && npm run build && rm -rf /app/node_modules
       ```
    2. Отправляем образ в удаленный репо:
    ```commandline

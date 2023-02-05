@@ -375,3 +375,13 @@ root 1 0.0 0.3 9836 4012 pts/3 S+ 07:30 0:00 /bin/bash
 root 28 0.0 0.4 9836 4168 pts/0 S 07:38 0:00 -bash
 root 37 0.0 0.3 11476 3396 pts/0 R+ 07:38 0:00 ps aux
 ```
+
+### diff - команда сравнения результата выполнения 2-х команд
+```commandline
+diff <(helm template 13-kubernetes-config) <(helm template --set frontend.image.tag=0.2.0 13-kubernetes-config)
+116c116
+<           image: "raleonid/frontend:latest"
+---
+>           image: "raleonid/frontend:0.2.0"
+
+```

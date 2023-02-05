@@ -33,5 +33,5 @@ variable "control_plane_instance_count" {
 }
 
 variable "slave_node_instance_count" {
-  default = 2
+  default = 1
 }

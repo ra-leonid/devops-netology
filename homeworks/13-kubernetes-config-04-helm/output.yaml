@@ -1,0 +1,161 @@
+---
+# Source: 13-kubernetes-config/templates/pv-10mi-nfc.yml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-10mi-nfc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 100Mi
+  hostPath:
+    path: /data/pv
+  persistentVolumeReclaimPolicy: Delete
+---
+# Source: 13-kubernetes-config/templates/pvc.yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# Source: 13-kubernetes-config/templates/service_back.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+    - name: backend
+      port: 9000
+  selector:
+    app: backend
+  type: ClusterIP
+---
+# Source: 13-kubernetes-config/templates/service_db.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  ports:
+    - name: db
+      port: 5432
+  selector:
+    app: db
+  type: ClusterIP
+---
+# Source: 13-kubernetes-config/templates/service_front.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  ports:
+    - name: frontend
+      port: 8000
+      targetPort: 80
+  selector:
+    app: frontend
+  type: ClusterIP
+---
+# Source: 13-kubernetes-config/templates/deployment_back.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: "raleonid/backend:0.1.0"
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DATABASE_URL
+              value: "postgres://postgres:postgres@db:5432/news"
+          imagePullPolicy: IfNotPresent
+---
+# Source: 13-kubernetes-config/templates/deployment_front.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "raleonid/frontend:0.2.0"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: BASE_URL
+              value: "http://backend:9000"
+          imagePullPolicy: IfNotPresent
+---
+# Source: 13-kubernetes-config/templates/statefulset_db.yml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: "postgres:13-alpine"
+          ports:
+            - containerPort: 5432
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: news
+          volumeMounts:
+            - mountPath: "/var/lib/postgresql/data"
+              name: pgdata
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: my-pvc

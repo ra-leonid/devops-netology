@@ -1,0 +1,39 @@
+frontend:
+  name: frontend
+  replicaCount: 1
+
+  image:
+    repository: raleonid/frontend
+    pullPolicy: IfNotPresent
+    tag: "0.1.0"
+
+  service:
+    type: ClusterIP
+    targetPort: 80
+    port: 8000
+
+backend:
+  name: backend
+  replicaCount: 1
+
+  image:
+    repository: raleonid/backend
+    pullPolicy: IfNotPresent
+    tag: "0.1.0"
+
+  service:
+    type: ClusterIP
+    port: 9000
+
+db:
+  name: db
+  replicaCount: 1
+
+  image:
+    repository: postgres
+    tag: "13-alpine"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 5432

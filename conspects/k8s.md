@@ -14,7 +14,7 @@ kubectl get pods
 # Получить список всех подов включая служебные в текущем namespace:
 kubectl get pods -A
 
-kubectl get po,pv,pvc,sts,storageclass -o wide
+kubectl get po,pv,pvc,sts,storageclass,svc -o wide
 
 # Получить список подов в namespace kube-system:
 kubectl get pods --namespace=kube-system
@@ -82,6 +82,50 @@ kubectl port-forward hello-node-697897c86-fvngg 8080:8080
 # Проверка
 curl http://127.0.0.1:8080
 
+```
+# HELM
+# Создание чарта first в папке charts
+```commandline
+helm create first
+```
+
+# Сборка ресурсов из шаблона 
+```commandline
+helm template first
+```
+
+# Linter
+```commandline
+helm lint first
+```
+
+Посмотреть список подключенных репозиториев:
+```commandline
+ helm repo list
+```
+
+Обновить репозитории:
+```commandline
+helm repo update
+```
+
+Найти в репозиториях чарты приложения
+```commandline
+helm search repo alertmanager
+```
+Установить
+```commandline
+helm install --create-namespace -n app1 demo-release 13-kubernetes-config
+```
+Что было установлено в k8s с помощью helm:
+```commandline
+helm list
+helm list -n app1
+```
+
+Удалить приложение:
+```commandline
+helm uninstall -n app1 demo-release
 ```
 
 ### Рабочие заметки: </br>

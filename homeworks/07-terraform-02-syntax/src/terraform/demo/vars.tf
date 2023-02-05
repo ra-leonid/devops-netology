@@ -1,13 +1,19 @@
 variable "yc_token" {
-   default = ""
+  default = ""
+  type = string
+  sensitive = true
 }
 
 variable "yc_cloud_id" {
   default = ""
+  type = string
+  sensitive = true
 }
 
 variable "yc_folder_id" {
   default = ""
+  type = string
+  sensitive = true
 }
 
 variable "yc_region" {
