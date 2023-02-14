@@ -34,6 +34,9 @@ kubectl get pods --show-labels
 # Получить подробную информацию о поде:
 kubectl describe pod nginx
 
+# Получить список configmap
+kubectl -n default get cm
+
 # Выполнить команду в контейнере пода:
 kubectl exec hello-node-697897c86-fvngg curl http://127.0.0.1
 kubectl -n default exec hello-node-697897c86-fvngg curl -s nginx-7664fdf455-wx5dp
@@ -127,6 +130,43 @@ helm list -n app1
 ```commandline
 helm uninstall -n app1 demo-release
 ```
+
+# Qbec & Jsonnet
+## Установка qbec
+1. Качаем последнюю версию с [github](https://github.com/splunk/qbec/releases)
+2. Распаковываем:
+```commandline
+cd ~/Загрузки/
+tar -xf qbec-linux-amd64.tar.gz -C qbec
+```
+3. Перемещаем к бинарям:
+```commandline
+sudo cp ./qbec/jsonnet-qbec /usr/bin
+sudo cp ./qbec/qbec /usr/bin
+```
+4. Удаляем:
+```commandline
+rm -rf qbec*
+```
+
+## Установка jsonnet
+1. Качаем последнюю версию с [github](https://github.com/google/jsonnet/releases)
+2. Распаковываем:
+```commandline
+cd ~/Загрузки/
+tar -xf jsonnet-0.19.1.tar.gz
+```
+3. Собираем:
+```commandline
+cd jsonnet-0.19.1/
+make
+```
+4. Перемещаем к бинарям:
+```commandline
+sudo cp jsonnet /usr/bin
+sudo cp jsonnetfmt /usr/bin
+```
+
 
 ### Рабочие заметки: </br>
 Хороша статья про политики: https://habr.com/ru/company/flant/blog/443190/ </br>

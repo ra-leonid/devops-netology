@@ -1,7 +1,7 @@
 .idea/
 .terraform/
 .terraform.lock.hcl
-**/terraform/**/key.json
+**/terraform/**/.key.json
 *.tfstate
 *.tfstate.*
 **/pgdata?/

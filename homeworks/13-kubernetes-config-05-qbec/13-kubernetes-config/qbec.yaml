@@ -1,0 +1,15 @@
+apiVersion: qbec.io/v1alpha1
+kind: App
+metadata:
+  name: 13-kubernetes-config
+spec:
+  environments:
+    stage:
+      defaultNamespace: stage
+      server: https://158.160.61.136:6443
+      excludes:
+        - endpoint1
+    production:
+      defaultNamespace: production
+      server: https://158.160.61.136:6443
+  vars: {}
