@@ -35,6 +35,26 @@ sudo sysctl -p /etc/sysctl.conf
 minikube start --vm-driver=docker --apiserver-ips=178.154.223.60
 # ключ --apiserver-ips указывает для какого IP авторизовать сертификаты на подключение
 ```
+
+Ошибка при старте minikube:
+```commandline
+E0215 20:06:13.960025    2733 start.go:415] unable to disable preinstalled bridge CNI(s): failed to disable all bridge cni configs in "/etc/cni/net.d": sudo find /etc/cni/net.d -maxdepth 1 -type f ( ( -name *bridge* -or -name *podman* ) -and -not -name *.mk_disabled ) -printf "%p, " -exec sh -c "sudo mv {} {}.mk_disabled" ;: exit status 1
+stdout:
+
+stderr:
+find: ‘/etc/cni/net.d’: Нет такого файла или каталога
+
+❌  Exiting due to RUNTIME_ENABLE: Temporary Error: sudo /usr/local/bin/crictl version: exit status 1
+stdout:
+
+stderr:
+time="2023-02-15T20:06:53+03:00" level=fatal msg="unable to determine runtime API version: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/cri-dockerd.sock: connect: connection refused\""
+```
+
+Решение:
+```commandline
+sudo cp /usr/local/bin/cri-dockerd /usr/bin/
+```
 3. Проверяем что всё запустилось:
 ```commandline
 ubuntu@minikube1:~$ minikube status
