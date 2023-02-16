@@ -167,6 +167,8 @@ sudo cp jsonnet /usr/bin
 sudo cp jsonnetfmt /usr/bin
 ```
 
+sudo minikube start --driver=none --network-plugin=cni --cni=bridge
+
 
 ### Рабочие заметки: </br>
 Хороша статья про политики: https://habr.com/ru/company/flant/blog/443190/ </br>

@@ -34,6 +34,7 @@ sudo sysctl -p /etc/sysctl.conf
 ```commandline
 minikube start --vm-driver=docker --apiserver-ips=178.154.223.60
 # ключ --apiserver-ips указывает для какого IP авторизовать сертификаты на подключение
+sudo minikube start --driver=none --network-plugin=cni --cni=bridge
 ```
 
 Ошибка при старте minikube:
