@@ -167,7 +167,7 @@ sudo cp jsonnet /usr/bin
 sudo cp jsonnetfmt /usr/bin
 ```
 
-sudo minikube start --driver=none --network-plugin=cni --cni=bridge
+minikube start --vm-driver=virtualbox
 
 
 ### Рабочие заметки: </br>
