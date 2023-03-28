@@ -38,6 +38,17 @@ sudo chmod 755 $DESTINATION
 echo $VERSION
 
 ```
+Для остановки всех запущенных контейнеров используйте такую команду: 
+docker container stop $(docker container ls -q)
+
+Удалить остановленный контейнер можно так: 
+docker rm [CONTAINER ID]
+
+Удалить все остановленные контейнеры можно командой: 
+docker container prune
+
+docker run --name app -d -p 8080:80 raleonid/app-meow:0.0.1
+
 
 docker-compose -f docker-compose.yaml up
 docker exec -it 2_db_1 bash

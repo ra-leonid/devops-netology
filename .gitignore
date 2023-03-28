@@ -1,13 +1,14 @@
 .idea/
 .terraform/
 .terraform.lock.hcl
+.secrets/
+secrets/
 **/terraform/**/.key.json
 *.tfstate
 *.tfstate.*
 **/pgdata?/
 **/backup/*
 **/data/*
-**/secrets/*
 *.sql
 **/snapshots/
 **/bucket.tf

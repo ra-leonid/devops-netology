@@ -1,0 +1,56 @@
+---
+- name: Copy "~/.kube/config"
+  hosts: kube_control_plane
+  tasks:
+    - name: Store config
+      become: true
+      ansible.builtin.fetch:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "~/.kube/config"
+        flat: true
+        mode: "755"
+
+- name: Change local "~/.kube/config"
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Add proxy line
+      lineinfile:
+        path: ~/.kube/config
+        insertafter: '^\s*server: https://127\.0\.0\.1:6443\s*$'
+        line: "    proxy-url: socks5://localhost:{{ proxy_port }}"
+    - name: Replace the internal ip with an external one
+      ansible.builtin.replace:
+        path: ~/.kube/config
+        regexp: "127.0.0.1"
+        replace: "{{ hostvars['kube_control_plane'].ansible_host }}"
+
+- name: Bastion Configuration
+  hosts: bastion
+  pre_tasks:
+    - name: Waiting For SSH connection
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+    - name: Setup alternate SSH port
+      become: true
+      lineinfile:
+          dest: "/etc/ssh/sshd_config"
+          regexp: "^Port"
+          line: 'Port {{ ssh_port }}'
+      notify: "Restart sshd"
+  handlers:
+    - name: Restart sshd
+      become: true
+      service:
+        name: sshd
+        state: restarted
+
+- name: Add ssh-tunnel"
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Run ssh-command
+      ansible.builtin.command: "ssh -D {{ proxy_port }} -f -C -q -N {{ hostvars['bastion'].ansible_user }}@{{ hostvars['bastion'].ansible_host }} -p {{ ssh_port }}"
+      register: result_ssh
+      failed_when: result_ssh.rc != 0 and result_ssh.rc != 255
+      changed_when: result_ssh.rc == 0

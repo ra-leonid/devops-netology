@@ -9,13 +9,14 @@ sudo apt-get install openvpn
 vim ~/vpnbook/auth.txt
 
 vpnbook
-xkud5hn
+dd4e58m
 
 Редактируем файл подключения к прокси:
 vim vpnbook-pl226-udp53.ovpn
 
-Найдите строку «auth-user-pass» и замените её на «auth-user-pass ~/vpnbook/auth.txt», где auth.txt это имя файла, в котором вы сохранили логин и пароль.
+Найдите строку «auth-user-pass» и замените её на «auth-user-pass auth.txt», где auth.txt это имя файла, в котором вы сохранили логин и пароль.
 
 # Command run
+cd ~/vpnbook
 sudo openvpn --config ~/vpnbook/vpnbook-pl226-udp53.ovpn
 sudo openvpn --config ~/vpnbook/vpnbook-pl226-tcp443.ovpn
