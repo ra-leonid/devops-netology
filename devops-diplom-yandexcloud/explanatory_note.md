@@ -20,7 +20,7 @@ mkdir ~/vpnbook
 ```
 3. С [сайта](https://www.vpnbook.com/) качаем один из файлов настройки vpn в созданный каталог:
 
-![](img/vpnbook.png)
+![](./img/vpnbook.png)
 4. Настройка:
 ```commandline
 cd ~/vpnbook
@@ -52,8 +52,8 @@ wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt update && sudo apt install terraform
 ```
-
-![](img/update terraform.png)
+### Результат:
+![](img/update-terraform.png)
 
 ## Предварительная подготовка к установке и запуску Kubernetes кластера.
 1. создаём каталог с авторизационными данными (добавлен в .gitignore):
@@ -155,7 +155,7 @@ terraform apply -auto-approve
 terraform destroy -auto-approve
 ```
 
-## Создание Kubernetes кластера.
+# Создание Kubernetes кластера.
 Кластер разворачиваем с помощью Kuberspray. 
 * Для `stage` окружения поднимаем: 1 control-plane и 1 node;
 * Для `prod` окружения поднимаем: 3 control-plane и 3 node, в разных зонах доступности;
@@ -171,7 +171,7 @@ terraform destroy -auto-approve
 2. В [site.yml](src/ansible/site.yml) реализуем проброс "~/.kube/config", заполнение "server" и "proxy-url", ssh-туннель.
 
 ### Результат:
-![](img/create k8s-cluster.png)
+![](img/create-k8s-cluster.png)
 
 ---
 ```commandline
@@ -188,7 +188,7 @@ terraform destroy -auto-approve
 ssh -D 1337 -f -C -q -N ubuntu@84.201.128.134 -p 22322
 ```
 
-## Создание тестового приложения
+# Создание тестового приложения
 * Создаем образ командой ```docker image build -t raleonid/app-meow:0.0.1 .```
 * Запускаем контейнер командой ```docker run -d -p 8080:80 raleonid/app-meow:0.0.1```
 * Проверяем
@@ -201,7 +201,7 @@ docker login
 docker image push raleonid/app-meow:0.0.1
 ```
 ### Результат:
-[Ссылка на контейнер](https://hub.docker.com/repository/docker/raleonid/app-meow)
+[Контейнер](https://hub.docker.com/repository/docker/raleonid/app-meow)
 
 [Репозиторий тестового приложения](https://github.com/ra-leonid/app-meow)
 
