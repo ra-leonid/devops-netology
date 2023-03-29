@@ -82,8 +82,8 @@ yc iam access-key create --folder-name new --service-account-name sa-terraform
 3. Сохраняем данные статического ключа для дальнейшего использования при доступе к s3 bucket:
 ```commandline
 cat > ./.secrets/backend.conf <<EOF
-access_key="YCAJEboPx4p9275pGzgui1xWO"
-secret_key="YCPtj5i1lKtRvHTFPAEotjxOHm0IC1Eiv0ipyRn_"
+access_key="xxx"
+secret_key="xxx"
 EOF
 terraform init -reconfigure -backend-config=./.secrets/backend.conf
 ```
@@ -97,8 +97,8 @@ terraform init -reconfigure -backend-config=./.secrets/backend.conf
 mkdir ~/.aws
 cat > ~/.aws/auth.txt <<EOF
 [default]
-aws_access_key_id="YCAJEboPx4p9275pGzgui1xWO"
-aws_secret_access_key="YCPtj5i1lKtRvHTFPAEotjxOHm0IC1Eiv0ipyRn_"
+aws_access_key_id="xxx"
+aws_secret_access_key="xxx"
 EOF
 ```
 2. В секции backend файла backend.tf (плохой вариант):
@@ -111,21 +111,21 @@ terraform {
     key        = "terraform.tfstate"
     skip_region_validation      = true
     skip_credentials_validation = true
-    access_key = "YCAJEboPx4p9275pGzgui1xWO"
-    secret_key = "YCPtj5i1lKtRvHTFPAEotjxOHm0IC1Eiv0ipyRn_"
+    access_key = "xxx"
+    secret_key = "xxx"
   }
 }
 ```
 2. В переменных среды:
 ```commandline
-export AWS_ACCESS_KEY_ID="YCAJEboPx4p9275pGzgui1xWO"
-export AWS_SECRET_ACCESS_KEY="YCPtj5i1lKtRvHTFPAEotjxOHm0IC1Eiv0ipyRn_"
+export AWS_ACCESS_KEY_ID="xxx"
+export AWS_SECRET_ACCESS_KEY="xxx"
 ```
 3. Передавать в параметрах выполнения команд terraform:
 ```commandline
 terraform init -reconfigure \
-    -backend-config="access_key=YCAJEboPx4p9275pGzgui1xWO" \
-    -backend-config="secret_key=YCPtj5i1lKtRvHTFPAEotjxOHm0IC1Eiv0ipyRn_"
+    -backend-config="access_key=xxx" \
+    -backend-config="secret_key=xxx"
 ```
     </p>
 </details>
