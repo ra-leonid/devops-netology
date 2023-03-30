@@ -163,11 +163,11 @@ terraform destroy -auto-approve
 Доступ к k8s-инстансам будет только через nat-instance, все ВМ кластера без публичных ip.
 
 Конфигурация Kuberspray и запуск выполняются автоматически посредством terraform, сразу после поднятия инфраструктуры.
-* Настройка хостов в ресурсе `kuberspray_inventory` файла [inventory.tf](src/terraform/k8s/inventory.tf);
-* Старт установки реализован в файле [kubespray.tf](src/terraform/k8s/kubespray.tf);
+* Настройка хостов в ресурсе `kuberspray_inventory` файла [inventory.tf](src/terraform/app/inventory.tf);
+* Старт установки реализован в файле [kubespray.tf](src/terraform/app/kubespray.tf);
 
 Реализуем "проброс" подключения к ВМ приватной сети через nat-instance:
-1. В [host.tpl](src/terraform/k8s/templates/hosts.tpl) добавляем секцию "bastion".
+1. В [host.tpl](src/terraform/app/templates/hosts.tpl) добавляем секцию "bastion".
 2. В [site.yml](src/ansible/site.yml) реализуем проброс "~/.kube/config", заполнение "server" и "proxy-url", ssh-туннель.
 
 ### Результат:

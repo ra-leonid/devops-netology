@@ -24,12 +24,14 @@ kubectl get pods -n=kube-system
 kubectl get pods --selector app=main
 kubectl get pods -l app=main
 kubectl -n prod get po -l 'app in (backend, frontend)'
+kubectl get pods -l app.kubernetes.io/name=grafana
 
 # Получить список подов с выводом подробной информации:
 kubectl get pods -o wide
 
 # Получить список подов с выводом информации о labels:
 kubectl get pods --show-labels
+kubectl get svc --show-labels
 
 # Получить подробную информацию о поде:
 kubectl describe pod nginx
@@ -62,8 +64,10 @@ kubectl delete -f ../manifests/nginx.yml
 
 # Изменить манифест деплоймента:
 kubectl edit deployment hello-node
+kubectl edit svc grafana-web
 kubectl delete deployment,pvc,pv,storageclass --all
 kubectl delete pvc --all
+kubectl delete svc grafana-web
 
 # Изменить манифест деплоймента командой (здесь мы изменяем количество реплик на 5):
 kubectl scale deploy hello-node -n default --replicas=5
@@ -76,14 +80,25 @@ kubectl describe replicasets
 kubectl get namespace
 kubectl get ns
 
+# Изменить namespace
+kubectl config set-context --current --namespace=monitoring
+kubectl config set-context --current --namespace=default
+
 # Просмотр логов:
 kubectl logs hello-node-697897c86-fvngg
 kubectl logs hello-node-697897c86-fvngg --all-containers
 
 # Проброс порта пода до локальной ВМ
 kubectl port-forward hello-node-697897c86-fvngg 8080:8080
+kubectl port-forward service/grafana 3000:3000
 # Проверка
 curl http://127.0.0.1:8080
+
+# проброс порта созданием сервиса NodePort
+kubectl create deployment web --image=gcr.io/google-samples/hello-app:1.0
+kubectl expose deployment web --type=NodePort --port=8080
+minikube service web --url
+
 
 ```
 # HELM
@@ -167,7 +182,20 @@ sudo cp jsonnet /usr/bin
 sudo cp jsonnetfmt /usr/bin
 ```
 
-minikube start --vm-driver=virtualbox
+```commandline
+# старт minikube
+minikube start --vm-driver=virtualbox --kubernetes-version=v1.26.1
+
+# Старт minikube для запуска пакета kube-prometheus
+minikube delete && minikube start --vm-driver=virtualbox --kubernetes-version=v1.23.0 --memory=6g --bootstrapper=kubeadm --extra-config=kubelet.authentication-token-webhook=true --extra-config=kubelet.authorization-mode=Webhook --extra-config=scheduler.bind-address=0.0.0.0 --extra-config=controller-manager.bind-address=0.0.0.0
+
+# Стек kube-prometheus включает API-сервер метрик ресурсов, 
+# поэтому аддон metrics-server не нужен. 
+# Убедитесь, что надстройка metrics-server отключена на minikube:
+minikube addons disable metrics-server
+
+```
+
 
 
 ### Рабочие заметки: </br>
