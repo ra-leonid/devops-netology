@@ -56,7 +56,7 @@ sudo apt update && sudo apt install terraform
 ![](img/update-terraform.png)
 
 ## Предварительная подготовка к установке и запуску Kubernetes кластера.
-1. создаём каталог с авторизационными данными (добавлен в .gitignore):
+1. Создаём каталог с авторизационными данными (добавлен в .gitignore):
 ```commandline
 mkdir ./.secrets
 
@@ -220,27 +220,28 @@ docker image push raleonid/app-meow:0.0.1
 	sed -i "/debug/,+2c\    debug:\n      defaultNamespace: debug\n      server: https://$IP_CONTROL_PLANE:8443" ./src/deploy/app/qbec.yaml
 ```
 * Для stage и prog - Ansible. 
+
 **TODO**: Реализовать автокорректировку окружение в файлах qbec.yaml при деплое в облако.
 
 ### Команды развертывания инфраструктуры и деплой приложений:
 
-| Команда                               |                                      Назначение                                       |
-|:--------------------------------------|:-------------------------------------------------------------------------------------:|
-| make ns=debug                         | Развертывание инфраструктуры minikube и деплой namespace `debug` на локальном ПК (ВМ) |
-| make                                  |            Развертывание инфраструктуры в YC и деплой в namespace `stage`             |
-| make ns=stage                         |                                    Аналогично make                                    |
-| make ns=prod                          |             Развертывание инфраструктуры в YC и деплой в namespace `prod`             |
-| make init                             |          Инициализация terraform. Только для развертывания `stage` и `prod`           |
-| make plan                             |         Получение плана terraform. Только для развертывания `stage` и `prod`          |
-| make apply ns=debug                   |                  Только развертывание minikube на локальном ПК (ВМ)                   |
-| make apply                            |             Только развертывание инфраструктуры в YC для `stage` и `prod`             |
-| make deploy ns=<namespace>            |               Только деплой основного приложения, мониторинга, atlantis               |
-| make deploy_app ns=<namespace>        |                          Только деплой основного приложения                           |
-| make deploy_monitoring ns=<namespace> |                               Только деплой мониторинга                               |
-| make deploy_atlantis  ns=<namespace>  |                                Только деплой atlantis                                 |
-| make destroy ns=debug                 |           Деинсталяция приложений и удаление локального кластера Kubernetes           |
-| make destroy                          |                              Удаление инфраструктуры YC                               |
-| make delete                           |                            Только деинсталяция приложений                             |
+| Команда                                 |                                      Назначение                                       |
+|:----------------------------------------|:-------------------------------------------------------------------------------------:|
+| make ns=debug                           | Развертывание инфраструктуры minikube и деплой namespace `debug` на локальном ПК (ВМ) |
+| make                                    |            Развертывание инфраструктуры в YC и деплой в namespace `stage`             |
+| make ns=stage                           |                                    Аналогично make                                    |
+| make ns=prod                            |             Развертывание инфраструктуры в YC и деплой в namespace `prod`             |
+| make init                               |          Инициализация terraform. Только для развертывания `stage` и `prod`           |
+| make plan                               |         Получение плана terraform. Только для развертывания `stage` и `prod`          |
+| make apply ns=debug                     |                  Только развертывание minikube на локальном ПК (ВМ)                   |
+| make apply                              |             Только развертывание инфраструктуры в YC для `stage` и `prod`             |
+| make deploy ns=\<namespace\>            |               Только деплой основного приложения, мониторинга, atlantis               |
+| make deploy_app ns=\<namespace\>        |                          Только деплой основного приложения                           |
+| make deploy_monitoring ns=\<namespace\> |                               Только деплой мониторинга                               |
+| make deploy_atlantis  ns=\<namespace\>  |                                Только деплой atlantis                                 |
+| make destroy ns=\<namespace\>           |           Деинсталяция приложений и удаление локального кластера Kubernetes           |
+| make destroy                            |                              Удаление инфраструктуры YC                               |
+| make delete                             |                            Только деинсталяция приложений                             |
 
 ### Настройка деплоя приложения:
 Деплой приложения осуществляем посредством qbec.
@@ -275,6 +276,7 @@ grafana:
 ```
 
 Итоговый файл настроек [values.yaml](src/deploy/kube-prometheus/values.yaml).
+
 **TODO**: Реализовать безопасное хранение пароля админа, реализовать установку с помощью qbec.
 
 ### Настройка деплоя atlantis
@@ -304,6 +306,7 @@ ingress:
 ```
 
 Итоговый файл настроек [values.yaml](src/deploy/atlantis/values.yaml).
+
 **TODO**: Реализовать безопасное хранение token и secret, разобраться как задается пароль админа, реализовать установку с помощью qbec.
 
 ## Установка и настройка CI/CD
@@ -330,5 +333,13 @@ controller:
 ```commandline
 helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml
 ```
-Итоговый файл настроек [values.yaml](src/deploy/atlantis/values.yaml).
-**TODO**: Реализовать безопасное хранение token и secret, разобраться как задается пароль админа, реализовать установку с помощью qbec.
+Итоговый файл настроек [values.yaml](src/deploy/jenkins/values.yaml).
+
+Логин для подключения хранится в файле настроек (admin).
+
+Для получения пароля, выполняем команду:
+```commandline
+kubectl -n debug get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
+```
+
+**TODO**: Реализовать безопасное хранение token и secret, реализовать установку с помощью qbec.

@@ -6,10 +6,12 @@ ifeq ($(ns),debug)
 	TARGET_DESTROY := delete destroy_debug
 	SLEEP_COUNT := 3
 	ns := debug
+	url := meow-app.local
 else
 	TARGET_ALL := init plan apply pause deploy
 	TARGET_DESTROY := destroy_cloud
 	SLEEP_COUNT := 120
+	url := meow-app.duckdns.org
 endif
 
 all: $(TARGET_ALL)
@@ -48,10 +50,10 @@ pause:
 
 debug_setting:
 	sed -i "/debug/,+2c\    debug:\n      defaultNamespace: debug\n      server: https://$(shell minikube ip):8443" ./src/deploy/app/qbec.yaml
-	sudo sed -i "/\tgrafana.meow-app.ru/c$(shell minikube ip)\tgrafana.meow-app.ru" /etc/hosts
-	sudo sed -i "/\tatlantis.meow-app.ru/c$(shell minikube ip)\tatlantis.meow-app.ru" /etc/hosts
-	sudo sed -i "/\tjenkins.meow-app.ru/c$(shell minikube ip)\tjenkins.meow-app.ru" /etc/hosts
-	sudo sed -i "/\tmeow-app.ru/c$(shell minikube ip)\tmeow-app.ru" /etc/hosts
+	sudo sed -i "/\tgrafana.$(url)/c$(shell minikube ip)\tgrafana.$(url)" /etc/hosts
+	sudo sed -i "/\tatlantis.$(url)/c$(shell minikube ip)\tatlantis.$(url)" /etc/hosts
+	sudo sed -i "/\tjenkins.$(url)/c$(shell minikube ip)\tjenkins.$(url)" /etc/hosts
+	sudo sed -i "/\t$(url)/c$(shell minikube ip)\t$(url)" /etc/hosts
 
 deploy: deploy_monitoring deploy_app deploy_atlantis deploy_jenkins
 
