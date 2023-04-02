@@ -1,41 +1,79 @@
-all: init plan apply pause deploy
+
+ns ?= stage
+
+ifeq ($(ns),debug)
+	TARGET_ALL := apply pause debug_setting deploy
+	TARGET_DESTROY := delete destroy_debug
+	SLEEP_COUNT := 3
+	ns := debug
+else
+	TARGET_ALL := init plan apply pause deploy
+	TARGET_DESTROY := destroy_cloud
+	SLEEP_COUNT := 120
+endif
+
+all: $(TARGET_ALL)
+
+destroy: $(TARGET_DESTROY)
 
 init:
+	cd ./src/terraform/app && terraform init -reconfigure -backend-config=./.secrets/backend.conf
 	cd ./src/terraform/app && terraform init
+	cd ./src/terraform/app && terraform workspace new $ns
 
 plan:
 	cd ./src/terraform/app && terraform plan
 
 apply:
+ifeq ($(ns),debug)
+	minikube delete
+	minikube start \
+		--vm-driver=virtualbox \
+		--kubernetes-version=v1.23.0 \
+		--memory=6g --bootstrapper=kubeadm \
+		--extra-config=kubelet.authentication-token-webhook=true \
+		--extra-config=kubelet.authorization-mode=Webhook \
+		--extra-config=scheduler.bind-address=0.0.0.0 \
+		--extra-config=controller-manager.bind-address=0.0.0.0
+	minikube addons disable metrics-server
+	minikube addons enable ingress
+else
 	cd ./src/terraform/app &&  terraform apply -auto-approve
-
-destroy:
-	cd ./src/terraform/app &&  terraform destroy -auto-approve
+endif
 
 pause:
-	echo "Wait for 120 seconds stupid Yandex Cloud creating a VM's..."
-	sleep 120
-	echo "May be created? Ok, run an ansible playbook..."
+	echo "Wait for $(SLEEP_COUNT) seconds stupid k8s creating..."
+	sleep $(SLEEP_COUNT)
+	echo "May be created? Ok, run an deploy..."
 
-deploy_k8s:
-    cd ./src/kubespray && \
-    ANSIBLE_FORCE_COLOR=1 ansible-playbook \
-        -i ./inventory/mycluster/hosts.yaml \
-        -b --become-user=root \
-        --extra-vars "{ \\"supplementary_addresses_in_ssl_keys\\":${jsonencode(module.all_nodes["control_plane"].internal_ip_address_instance)}}" \
-        cluster.yml
+debug_setting:
+	sed -i "/debug/,+2c\    debug:\n      defaultNamespace: debug\n      server: https://$(shell minikube ip):8443" ./src/deploy/app/qbec.yaml
+	sudo sed -i "/\tgrafana.meow-app.ru/c$(shell minikube ip)\tgrafana.meow-app.ru" /etc/hosts
+	sudo sed -i "/\tatlantis.meow-app.ru/c$(shell minikube ip)\tatlantis.meow-app.ru" /etc/hosts
+	sudo sed -i "/\tjenkins.meow-app.ru/c$(shell minikube ip)\tjenkins.meow-app.ru" /etc/hosts
+	sudo sed -i "/\tmeow-app.ru/c$(shell minikube ip)\tmeow-app.ru" /etc/hosts
 
-configuring_access_to_k8s:
-	cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml configuring_access_to_k8s.yml
+deploy: deploy_monitoring deploy_app deploy_atlantis deploy_jenkins
+
+deploy_app:
+	cd ./src/deploy/app && qbec apply $(ns) --yes
 
 deploy_monitoring:
-    cd ./src/manifests/kube-prometheus && \
-    kubectl apply --server-side -f setup && \
-    kubectl wait \
-        --for condition=Established \
-        --all CustomResourceDefinition \
-        --namespace=monitoring && \
-    kubectl apply -f
+	helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --create-namespace -n $(ns) -f src/deploy/kube-prometheus/values.yaml
 
-reconfig:
-	cd ./ansible && source .env.news-app && ansible-playbook -i inventory/demo site.yml -t config
+deploy_atlantis:
+	helm upgrade --install atlantis runatlantis/atlantis --create-namespace -n $(ns) -f src/deploy/atlantis/values.yaml
+
+deploy_jenkins:
+	helm upgrade --install jenkins jenkins/jenkins --create-namespace -n $(ns) -f src/deploy/jenkins/values.yaml
+
+destroy_cloud:
+	cd ./src/terraform/app &&  terraform destroy -auto-approve
+
+delete:
+	helm uninstall monitoring -n monitoring
+	helm uninstall atlantis -n atlantis
+	cd ./src/deploy/app && qbec delete $(ns) --yes
+
+destroy_debug:
+	minikube delete

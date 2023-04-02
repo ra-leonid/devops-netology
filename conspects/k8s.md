@@ -68,6 +68,7 @@ kubectl edit svc grafana-web
 kubectl delete deployment,pvc,pv,storageclass --all
 kubectl delete pvc --all
 kubectl delete svc grafana-web
+kubectl --namespace monitoring delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 
 # Изменить манифест деплоймента командой (здесь мы изменяем количество реплик на 5):
 kubectl scale deploy hello-node -n default --replicas=5
@@ -130,6 +131,7 @@ helm repo update
 Найти в репозиториях чарты приложения
 ```commandline
 helm search repo alertmanager
+helm search repo jenkins
 ```
 Установить
 ```commandline

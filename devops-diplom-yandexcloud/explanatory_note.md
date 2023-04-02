@@ -163,6 +163,11 @@ terraform destroy -auto-approve
 Доступ к k8s-инстансам будет только через nat-instance, все ВМ кластера без публичных ip.
 
 Конфигурация Kuberspray и запуск выполняются автоматически посредством terraform, сразу после поднятия инфраструктуры.
+
+Создаем каталог и загружаем `kubespray` <https://github.com/kubernetes-sigs/kubespray>.
+```commandline
+git submodule add https://github.com/kubernetes-sigs/kubespray src/vendor/kubespray
+```
 * Настройка хостов в ресурсе `kuberspray_inventory` файла [inventory.tf](src/terraform/app/inventory.tf);
 * Старт установки реализован в файле [kubespray.tf](src/terraform/app/kubespray.tf);
 
@@ -206,3 +211,124 @@ docker image push raleonid/app-meow:0.0.1
 [Репозиторий тестового приложения](https://github.com/ra-leonid/app-meow)
 
 ## Подготовка cистемы мониторинга и деплой приложения
+
+При деплое автоматически настраиваем ip адреса в файле qbec.yaml.
+Настраиваем 3 окружения stage, prod и debug. debug нужен для локальной отладки на minikube. 
+Окружение в файлах qbec.yaml автоматически корректируется при деплое. 
+* Для debug - в makefile.
+```commandline
+	sed -i "/debug/,+2c\    debug:\n      defaultNamespace: debug\n      server: https://$IP_CONTROL_PLANE:8443" ./src/deploy/app/qbec.yaml
+```
+* Для stage и prog - Ansible. 
+**TODO**: Реализовать автокорректировку окружение в файлах qbec.yaml при деплое в облако.
+
+### Команды развертывания инфраструктуры и деплой приложений:
+
+| Команда                               |                                      Назначение                                       |
+|:--------------------------------------|:-------------------------------------------------------------------------------------:|
+| make ns=debug                         | Развертывание инфраструктуры minikube и деплой namespace `debug` на локальном ПК (ВМ) |
+| make                                  |            Развертывание инфраструктуры в YC и деплой в namespace `stage`             |
+| make ns=stage                         |                                    Аналогично make                                    |
+| make ns=prod                          |             Развертывание инфраструктуры в YC и деплой в namespace `prod`             |
+| make init                             |          Инициализация terraform. Только для развертывания `stage` и `prod`           |
+| make plan                             |         Получение плана terraform. Только для развертывания `stage` и `prod`          |
+| make apply ns=debug                   |                  Только развертывание minikube на локальном ПК (ВМ)                   |
+| make apply                            |             Только развертывание инфраструктуры в YC для `stage` и `prod`             |
+| make deploy ns=<namespace>            |               Только деплой основного приложения, мониторинга, atlantis               |
+| make deploy_app ns=<namespace>        |                          Только деплой основного приложения                           |
+| make deploy_monitoring ns=<namespace> |                               Только деплой мониторинга                               |
+| make deploy_atlantis  ns=<namespace>  |                                Только деплой atlantis                                 |
+| make destroy ns=debug                 |           Деинсталяция приложений и удаление локального кластера Kubernetes           |
+| make destroy                          |                              Удаление инфраструктуры YC                               |
+| make delete                           |                            Только деинсталяция приложений                             |
+
+### Настройка деплоя приложения:
+Деплой приложения осуществляем посредством qbec.
+1. Создаём каталог и инициализируем приложение:
+```commandline
+mkdir -p src/deploy/app
+cd src/deploy/app
+qbec init app
+```
+2. Описываем создание приложения в файле [app.jsonnet](src/deploy/app/components/app.jsonnet).
+3. Для доступа к приложению извне, необходимо поднять 2 сервиса: [ClusterIP](src/deploy/app/components/app-svc.jsonnet) и [Ingress](src/deploy/app/components/app-web.jsonnet).
+4. Параметризируем всё в [base.libsonnet](src/deploy/app/environments/base.libsonnet)
+
+### Настройка деплоя kube-prometheus
+Деплой kube-prometheus выполняем с помощью helm.
+1. Создаём каталог, получаем настройки чарта:
+```commandline
+mkdir -p src/deploy/kube-prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm show values prometheus-community/kube-prometheus-stack > src/deploy/kube-prometheus/values.yaml
+```
+2. В настройках чарта меняем (**только указанные значения!**) в секции `grafana.ingress`:
+```yaml
+//...
+grafana:
+  ingress:
+    enabled: true
+//...
+    hosts:
+      - grafana.meow-app.ru
+//...
+```
+
+Итоговый файл настроек [values.yaml](src/deploy/kube-prometheus/values.yaml).
+**TODO**: Реализовать безопасное хранение пароля админа, реализовать установку с помощью qbec.
+
+### Настройка деплоя atlantis
+Деплой atlantis выполняем с помощью helm.
+1. Создаём каталог, получаем настройки чарта:
+```commandline
+mkdir -p src/deploy/atlantis
+helm repo add runatlantis https://runatlantis.github.io/helm-charts
+helm show values runatlantis/atlantis > src/deploy/atlantis/values.yaml
+```
+2. В настройках чарта меняем (**только указанные значения!**) в секциях:
+```yaml
+//...
+orgAllowlist: github.com/runatlantis/*
+//...
+github:
+   user: "ra-leonid"
+   token: "xxx"
+   secret: "yyy"
+//...
+ingress:
+//...
+  hosts:
+    - host: atlantis.meow-app.ru
+      paths: ["/"]
+ //...
+```
+
+Итоговый файл настроек [values.yaml](src/deploy/atlantis/values.yaml).
+**TODO**: Реализовать безопасное хранение token и secret, разобраться как задается пароль админа, реализовать установку с помощью qbec.
+
+## Установка и настройка CI/CD
+1. Создаём каталог, получаем настройки чарта:
+```commandline
+mkdir -p src/deploy/jenkins
+helm repo add jenkins https://charts.jenkins.io
+helm show values jenkins/jenkins > src/deploy/jenkins/values.yaml
+```
+2. В настройках чарта меняем (**только указанные значения!**) в секциях:
+```yaml
+//...
+controller:
+//...
+  ingress:
+    enabled: true
+//...
+    apiVersion: "networking.k8s.io/v1"
+//...
+    hostName: jenkins.meow-app.ru
+ //...
+```
+3. Команда деплоя:
+```commandline
+helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml
+```
+Итоговый файл настроек [values.yaml](src/deploy/atlantis/values.yaml).
+**TODO**: Реализовать безопасное хранение token и secret, разобраться как задается пароль админа, реализовать установку с помощью qbec.

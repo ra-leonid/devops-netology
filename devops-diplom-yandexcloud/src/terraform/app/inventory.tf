@@ -9,7 +9,7 @@ resource "local_file" "kuberspray_inventory" {
       ip_bastion = module.vpc.nat_ip_address
     }
   )
-  filename = "../../kubespray/inventory/mycluster/hosts.yaml"
+  filename = "../../vendor/kubespray/inventory/mycluster/hosts.yaml"
 
   depends_on = [
     module.all_nodes
