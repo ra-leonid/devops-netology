@@ -6,7 +6,7 @@ spec:
   environments:
     debug:
       defaultNamespace: debug
-      server: https://192.168.59.124:8443
+      server: https://192.168.59.127:8443
     prod:
       defaultNamespace: prod
       server: https://192.168.59.103:8443

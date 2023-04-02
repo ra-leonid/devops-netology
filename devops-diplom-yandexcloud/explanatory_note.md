@@ -238,7 +238,8 @@ docker image push raleonid/app-meow:0.0.1
 | make deploy ns=\<namespace\>            |               Только деплой основного приложения, мониторинга, atlantis               |
 | make deploy_app ns=\<namespace\>        |                          Только деплой основного приложения                           |
 | make deploy_monitoring ns=\<namespace\> |                               Только деплой мониторинга                               |
-| make deploy_atlantis  ns=\<namespace\>  |                                Только деплой atlantis                                 |
+| make deploy_atlantis ns=\<namespace\>   |                                Только деплой atlantis                                 |
+| make deploy_jenkins ns=\<namespace\>    |                                 Только деплой jenkins                                 |
 | make destroy ns=\<namespace\>           |           Деинсталяция приложений и удаление локального кластера Kubernetes           |
 | make destroy                            |                              Удаление инфраструктуры YC                               |
 | make delete                             |                            Только деинсталяция приложений                             |
