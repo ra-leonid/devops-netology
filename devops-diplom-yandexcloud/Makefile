@@ -50,9 +50,9 @@ pause:
 
 debug_setting:
 	sed -ie "/debug/,+2d;/  environments:/ a\    debug:\n      defaultNamespace: debug\n      server: https://$(shell minikube ip):8443" src/deploy/app/qbec.yaml
-	sudo sed -ie "/\tgrafana.$(url)/d; 1 i$(shell minikube ip)\tgrafana.$(url)" /etc/hosts
-	sudo sed -ie "/\tatlantis.$(url)/d; 1 i$(shell minikube ip)\tatlantis.$(url)" /etc/hosts
-	sudo sed -ie "/\tjenkins.$(url)/d; 1 i$(shell minikube ip)\tjenkins.$(url)" /etc/hosts
+	sudo sed -ie "/\tgrafana./d; 1 i$(shell minikube ip)\tgrafana.$(url)" /etc/hosts
+	sudo sed -ie "/\tatlantis./d; 1 i$(shell minikube ip)\tatlantis.$(url)" /etc/hosts
+	sudo sed -ie "/\tjenkins./d; 1 i$(shell minikube ip)\tjenkins.$(url)" /etc/hosts
 	sudo sed -ie "/\t$(url)/d; 1 i$(shell minikube ip)\t$(url)" /etc/hosts
 
 deploy: deploy_monitoring deploy_app deploy_atlantis deploy_jenkins
