@@ -13,3 +13,4 @@ secrets/
 **/snapshots/
 **/bucket.tf
 **/*.tfvars
+qbec.yamle
