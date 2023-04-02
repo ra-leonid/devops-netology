@@ -35,7 +35,6 @@ resource "yandex_lb_network_load_balancer" "site-devops-lb" {
     }
   }
   attached_target_group {
-    //target_group_id = "${yandex_compute_instance_group.ig-1.load_balancer.0.target_group_id}"
     target_group_id = yandex_lb_target_group.site-devops-lb-tg.id
     healthcheck {
       name = "http"

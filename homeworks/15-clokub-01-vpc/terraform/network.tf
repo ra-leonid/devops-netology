@@ -9,7 +9,6 @@ resource "yandex_vpc_subnet" "public" {
   network_id     = "${yandex_vpc_network.netology.id}"
 }
 
-
 resource "yandex_vpc_subnet" "private" {
   name           = "private"
   v4_cidr_blocks = ["192.168.20.0/24"]

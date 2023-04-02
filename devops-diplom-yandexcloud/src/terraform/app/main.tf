@@ -1,4 +1,3 @@
-
 module "vpc" {
   source  = "ra-leonid/vpc/yandex"
   version = "0.2.1"
@@ -9,6 +8,7 @@ module "vpc" {
   name = "k8s-${terraform.workspace}"
   subnets = local.vpc_subnets[terraform.workspace]
 }
+
 module "all_nodes" {
   source = "../modules/instance"
   for_each = local.name_set

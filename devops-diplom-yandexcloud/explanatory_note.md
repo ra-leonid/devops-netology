@@ -254,6 +254,36 @@ qbec init app
 2. Описываем создание приложения в файле [app.jsonnet](src/deploy/app/components/app.jsonnet).
 3. Для доступа к приложению извне, необходимо поднять 2 сервиса: [ClusterIP](src/deploy/app/components/app-svc.jsonnet) и [Ingress](src/deploy/app/components/app-web.jsonnet).
 4. Параметризируем всё в [base.libsonnet](src/deploy/app/environments/base.libsonnet)
+5. В [qbec.yaml](src/deploy/app/qbec.yaml) добавляем использование внешних переменных
+```yaml
+  vars:
+    external:
+      - name: url
+        default: meow-app.local
+```
+6. В настройке [Ingress](src/deploy/app/components/app-web.jsonnet) определяем переменную `url` и далее используем её:
+```jsonnet
+local url = std.extVar('url');
+
+{
+//...
+  spec: {
+    rules: [
+      {
+        host: url,
+//...
+      }
+    ]
+  }
+}
+```
+7. Команда деплоя:
+```commandline
+qbec apply debug --vm:ext-str url=meow-app.local --strict-vars --yes
+```
+где:
+* `--strict-vars` - требует, чтобы все объявленные значения были установлены в командной строке. Запрещает установку необъявленных переменных.
+* `--yes` - на все вопросы деплоя отвечать `yes`.
 
 ### Настройка деплоя kube-prometheus
 Деплой kube-prometheus выполняем с помощью helm.
@@ -276,6 +306,10 @@ grafana:
 ```
 
 Итоговый файл настроек [values.yaml](src/deploy/kube-prometheus/values.yaml).
+3. Команда деплоя:
+```commandline
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --create-namespace -n debug -f src/deploy/kube-prometheus/values.yaml --set grafana.ingress.hosts[0]=grafana.meow-app.local
+```
 
 **TODO**: Реализовать безопасное хранение пароля админа, реализовать установку с помощью qbec.
 
@@ -306,6 +340,10 @@ ingress:
 ```
 
 Итоговый файл настроек [values.yaml](src/deploy/atlantis/values.yaml).
+3. Команда деплоя:
+```commandline
+helm upgrade --install atlantis runatlantis/atlantis --create-namespace -n debug -f src/deploy/atlantis/values.yaml --set ingress.hosts[0].host=atlantis.meow-app.local
+```
 
 **TODO**: Реализовать безопасное хранение token и secret, разобраться как задается пароль админа, реализовать установку с помощью qbec.
 
@@ -329,13 +367,12 @@ controller:
     hostName: jenkins.meow-app.ru
  //...
 ```
+
+Итоговый файл настроек [values.yaml](src/deploy/jenkins/values.yaml).
 3. Команда деплоя:
 ```commandline
-helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml
+helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml --set controller.ingress.hostName=jenkins.meow-app.local
 ```
-Итоговый файл настроек [values.yaml](src/deploy/jenkins/values.yaml).
-
-Логин для подключения хранится в файле настроек (admin).
 
 Для получения пароля, выполняем команду:
 ```commandline

@@ -23,7 +23,6 @@ local svc(name, type, port, targetPort=null, nodePort=null, url=null) = {
       },
       service: {
 				type: 'ClusterIP',
-				url: 'meow-app.duckdns.org',
 				ports: {
 						name: 'tcp',
 						port: 8000,

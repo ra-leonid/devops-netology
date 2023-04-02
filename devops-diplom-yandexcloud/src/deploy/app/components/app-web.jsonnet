@@ -1,6 +1,6 @@
-
 local p = import '../params.libsonnet';
 local params = p.components.app;
+local url = std.extVar('url');
 
 {
   apiVersion: 'networking.k8s.io/v1',
@@ -15,7 +15,7 @@ local params = p.components.app;
   spec: {
 		rules: [
 			{
-				host: params.service.url,
+				host: url,
 				http: {
 					paths: [
 						{
