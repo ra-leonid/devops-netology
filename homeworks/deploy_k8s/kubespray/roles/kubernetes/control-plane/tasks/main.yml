@@ -1,7 +1,7 @@
 ---
 - import_tasks: pre-upgrade.yml
   tags:
-    - k8s-pre-upgrade
+    - app-pre-upgrade
 
 - name: Create webhook token auth config
   template:
@@ -80,8 +80,8 @@
 
 - name: Install script to renew K8S control plane certificates
   template:
-    src: k8s-certs-renew.sh.j2
-    dest: "{{ bin_dir }}/k8s-certs-renew.sh"
+    src: app-certs-renew.sh.j2
+    dest: "{{ bin_dir }}/app-certs-renew.sh"
     mode: 0755
 
 - name: Renew K8S control plane certificates monthly 1/2
@@ -90,14 +90,14 @@
     dest: "/etc/systemd/system/{{ item }}"
     mode: 0644
   with_items:
-    - k8s-certs-renew.service
-    - k8s-certs-renew.timer
+    - app-certs-renew.service
+    - app-certs-renew.timer
   register: k8s_certs_units
   when: auto_renew_certificates
 
 - name: Renew K8S control plane certificates monthly 2/2
   systemd:
-    name: k8s-certs-renew.timer
+    name: app-certs-renew.timer
     enabled: yes
     state: started
     daemon-reload: "{{ k8s_certs_units is changed }}"

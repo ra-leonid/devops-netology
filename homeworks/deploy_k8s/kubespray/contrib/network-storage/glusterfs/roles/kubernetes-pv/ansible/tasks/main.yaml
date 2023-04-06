@@ -1,5 +1,5 @@
 ---
-- name: Kubernetes Apps | Lay Down k8s GlusterFS Endpoint and PV
+- name: Kubernetes Apps | Lay Down app GlusterFS Endpoint and PV
   template:
     src: "{{ item.file }}"
     dest: "{{ kube_config_dir }}/{{ item.dest }}"

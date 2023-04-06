@@ -50,6 +50,6 @@ def test_run(host, image):
     nerdctl = "/usr/local/bin/nerdctl"
 
     with host.sudo():
-        cmd = host.command(nerdctl + " -n k8s.io run " + image)
+        cmd = host.command(nerdctl + " -n app.io run " + image)
     assert cmd.rc == 0
     assert "Hello from Docker" in cmd.stdout

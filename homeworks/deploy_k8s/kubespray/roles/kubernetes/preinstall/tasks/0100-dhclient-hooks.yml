@@ -12,7 +12,7 @@
     backup: yes
     marker: "# Ansible entries {mark}"
     mode: 0644
-  notify: Preinstall | propagate resolvconf to k8s components
+  notify: Preinstall | propagate resolvconf to app components
 
 - name: Configure dhclient hooks for resolv.conf (non-RH)
   template:
@@ -20,7 +20,7 @@
     dest: "{{ dhclienthookfile }}"
     owner: root
     mode: 0755
-  notify: Preinstall | propagate resolvconf to k8s components
+  notify: Preinstall | propagate resolvconf to app components
   when: ansible_os_family not in [ "RedHat", "Suse" ]
 
 - name: Configure dhclient hooks for resolv.conf (RH-only)
@@ -29,5 +29,5 @@
     dest: "{{ dhclienthookfile }}"
     owner: root
     mode: 0755
-  notify: Preinstall | propagate resolvconf to k8s components
+  notify: Preinstall | propagate resolvconf to app components
   when: ansible_os_family == "RedHat"

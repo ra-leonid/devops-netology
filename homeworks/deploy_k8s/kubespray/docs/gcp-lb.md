@@ -13,7 +13,7 @@ To get working it in kubespray, you need to add tag to GCE instances and specify
 
 ```yaml
     cloud_provider: gce
-    gce_node_tags: k8s-lb
+    gce_node_tags: app-lb
 ```
 
 When you will setup it and create SVC in Kubernetes with `type=LoadBalancer`, cloud provider will create public IP and will set firewall.

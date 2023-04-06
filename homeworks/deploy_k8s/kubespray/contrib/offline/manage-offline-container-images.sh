@@ -46,7 +46,7 @@ function create_container_image_tar() {
 
 		# NOTE: Here removes the following repo parts from each image
 		# so that these parts will be replaced with Kubespray.
-		# - kube_image_repo: "registry.k8s.io"
+		# - kube_image_repo: "registry.app.io"
 		# - gcr_image_repo: "gcr.io"
 		# - docker_image_repo: "docker.io"
 		# - quay_image_repo: "quay.io"

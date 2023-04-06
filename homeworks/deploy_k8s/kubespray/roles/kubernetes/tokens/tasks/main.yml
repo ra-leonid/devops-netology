@@ -2,8 +2,8 @@
 
 - import_tasks: check-tokens.yml
   tags:
-    - k8s-secrets
-    - k8s-gen-tokens
+    - app-secrets
+    - app-gen-tokens
     - facts
 
 - name: Make sure the tokens directory exits
@@ -15,5 +15,5 @@
 
 - import_tasks: gen_tokens.yml
   tags:
-    - k8s-secrets
-    - k8s-gen-tokens
+    - app-secrets
+    - app-gen-tokens

@@ -8,6 +8,14 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 
 ```commandline
+# Get ALL
+kubectl api-resources --verbs=list --namespaced -o name \
+| xargs -n 1 kubectl get --show-kind --ignore-not-found -n default
+
+kubectl api-resources --verbs=list --namespaced -o name \ 
+| xargs -n 1 kubectl get --show-kind --ignore-not-found -n kube-node-lease
+
+
 # Получить список подов в текущем namespace:
 kubectl get pods
 
@@ -28,6 +36,7 @@ kubectl get pods -l app.kubernetes.io/name=grafana
 
 # Получить список подов с выводом подробной информации:
 kubectl get pods -o wide
+kubectl get pod jenkins -o yaml
 
 # Получить список подов с выводом информации о labels:
 kubectl get pods --show-labels
@@ -68,7 +77,7 @@ kubectl edit svc grafana-web
 kubectl delete deployment,pvc,pv,storageclass --all
 kubectl delete pvc --all
 kubectl delete svc grafana-web
-kubectl --namespace monitoring delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+kubectl --namespace debug delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 
 # Изменить манифест деплоймента командой (здесь мы изменяем количество реплик на 5):
 kubectl scale deploy hello-node -n default --replicas=5
@@ -77,21 +86,27 @@ kubectl scale deploy hello-node -n default --replicas=5
 kubectl get replicasets
 kubectl describe replicasets
 
+# Creating a new namespace
+kubectl create namespace jenkins
+
 # Получить список namespaces:
 kubectl get namespace
 kubectl get ns
 
 # Изменить namespace
-kubectl config set-context --current --namespace=monitoring
+kubectl config set-context --current --namespace=debug
 kubectl config set-context --current --namespace=default
+kubectl config set-context --current --namespace=jenkins
 
 # Просмотр логов:
 kubectl logs hello-node-697897c86-fvngg
 kubectl logs hello-node-697897c86-fvngg --all-containers
+kubectl logs jenkins-0 --all-containers
 
 # Проброс порта пода до локальной ВМ
 kubectl port-forward hello-node-697897c86-fvngg 8080:8080
 kubectl port-forward service/grafana 3000:3000
+kubectl port-forward service/jenkins 8080:8080
 # Проверка
 curl http://127.0.0.1:8080
 
@@ -120,7 +135,7 @@ helm lint first
 
 Посмотреть список подключенных репозиториев:
 ```commandline
- helm repo list
+helm repo list
 ```
 
 Обновить репозитории:

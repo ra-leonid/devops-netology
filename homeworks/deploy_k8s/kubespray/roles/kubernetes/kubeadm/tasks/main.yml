@@ -156,7 +156,7 @@
     mode: "0644"
 
 - name: Restart all kube-proxy pods to ensure that they load the new configmap
-  command: "{{ kubectl }} delete pod -n kube-system -l k8s-app=kube-proxy --force --grace-period=0"
+  command: "{{ kubectl }} delete pod -n kube-system -l app-app=kube-proxy --force --grace-period=0"
   run_once: true
   delegate_to: "{{ groups['kube_control_plane']|first }}"
   delegate_facts: false

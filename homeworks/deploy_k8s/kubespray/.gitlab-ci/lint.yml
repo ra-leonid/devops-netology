@@ -41,7 +41,7 @@ syntax-check:
     - ansible-playbook --syntax-check cluster.yml
     - ansible-playbook --syntax-check upgrade-cluster.yml
     - ansible-playbook --syntax-check reset.yml
-    - ansible-playbook --syntax-check extra_playbooks/upgrade-only-k8s.yml
+    - ansible-playbook --syntax-check extra_playbooks/upgrade-only-app.yml
   except: ['triggers', 'master']
 
 tox-inventory-builder:

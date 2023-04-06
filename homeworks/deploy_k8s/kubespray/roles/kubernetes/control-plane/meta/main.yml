@@ -3,7 +3,7 @@ dependencies:
   - role: kubernetes/tokens
     when: kube_token_auth
     tags:
-      - k8s-secrets
+      - app-secrets
   - role: adduser
     user: "{{ addusers.etcd }}"
     when:

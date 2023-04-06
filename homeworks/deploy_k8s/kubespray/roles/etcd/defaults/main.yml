@@ -6,7 +6,7 @@ etcd_owner: etcd
 etcd_cluster_setup: true
 etcd_events_cluster_setup: false
 
-# Set to true to separate k8s events to a different etcd cluster
+# Set to true to separate app events to a different etcd cluster
 etcd_events_cluster_enabled: false
 
 etcd_backup_prefix: "/var/backups"

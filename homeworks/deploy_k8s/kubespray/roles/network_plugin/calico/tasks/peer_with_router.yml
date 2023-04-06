@@ -38,7 +38,7 @@
         "bgp": {
           "asNumber": "{{ local_as }}"
         },
-        "orchRefs":[{"nodeName":"{{ inventory_hostname }}","orchestrator":"k8s"}]
+        "orchRefs":[{"nodeName":"{{ inventory_hostname }}","orchestrator":"app"}]
       }}
   register: output
   retries: 4

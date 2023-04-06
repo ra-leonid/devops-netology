@@ -19,8 +19,8 @@
       group_by:
         key: 'kube_node'
 
-- name: Add k8s-cluster nodes to k8s_cluster
-  hosts: k8s-cluster
+- name: Add app-cluster nodes to k8s_cluster
+  hosts: app-cluster
   gather_facts: false
   tags: always
   tasks:

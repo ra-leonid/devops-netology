@@ -21,9 +21,9 @@ ansible-playbook -b --become-user=root -i inventory/sample/k8s_gfs_inventory --u
 If your machines are not using Ubuntu, you need to change the `--user=ubuntu` to the correct user. Alternatively, if your Kubernetes machines are using one OS and your GlusterFS a different one, you can instead specify the `ansible_ssh_user=<correct-user>` variable in the inventory file that you just created, for each machine/VM:
 
 ```shell
-k8s-master-1 ansible_ssh_host=192.168.0.147 ip=192.168.0.147 ansible_ssh_user=core
-k8s-master-node-1 ansible_ssh_host=192.168.0.148 ip=192.168.0.148 ansible_ssh_user=core
-k8s-master-node-2 ansible_ssh_host=192.168.0.146 ip=192.168.0.146 ansible_ssh_user=core
+app-master-1 ansible_ssh_host=192.168.0.147 ip=192.168.0.147 ansible_ssh_user=core
+app-master-node-1 ansible_ssh_host=192.168.0.148 ip=192.168.0.148 ansible_ssh_user=core
+app-master-node-2 ansible_ssh_host=192.168.0.146 ip=192.168.0.146 ansible_ssh_user=core
 ```
 
 ## Using Terraform and Ansible

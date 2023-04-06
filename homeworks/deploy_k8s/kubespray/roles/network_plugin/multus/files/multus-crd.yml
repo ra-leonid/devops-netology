@@ -1,10 +1,10 @@
 ---
-apiVersion: apiextensions.k8s.io/v1
+apiVersion: apiextensions.app.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: network-attachment-definitions.k8s.cni.cncf.io
+  name: network-attachment-definitions.app.cni.cncf.io
 spec:
-  group: k8s.cni.cncf.io
+  group: app.cni.cncf.io
   scope: Namespaced
   names:
     plural: network-attachment-definitions
@@ -27,12 +27,12 @@ spec:
               description: 'APIVersion defines the versioned schema of this represen
                 tation of an object. Servers should convert recognized schemas to the
                 latest internal value, and may reject unrecognized values. More info:
-                https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                https://git.app.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
               type: string
             kind:
               description: 'Kind is a string value representing the REST resource this
                 object represents. Servers may infer this from the endpoint the client
-                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                submits requests to. Cannot be updated. In CamelCase. More info: https://git.app.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
               type: string
             metadata:
               type: object

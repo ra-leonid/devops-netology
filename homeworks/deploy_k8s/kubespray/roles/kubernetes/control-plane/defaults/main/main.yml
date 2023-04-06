@@ -12,7 +12,7 @@ kube_apiserver_bind_address: 0.0.0.0
 # Inclusive at both ends of the range.
 kube_apiserver_node_port_range: "30000-32767"
 
-# ETCD backend for k8s data
+# ETCD backend for app data
 kube_apiserver_storage_backend: etcd3
 
 # CIS 1.2.26
@@ -157,7 +157,7 @@ kube_webhook_authorization_url_skip_tls_verify: false
 # List of the preferred NodeAddressTypes to use for kubelet connections.
 kubelet_preferred_address_types: 'InternalDNS,InternalIP,Hostname,ExternalDNS,ExternalIP'
 
-## Extra args for k8s components passing by kubeadm
+## Extra args for app components passing by kubeadm
 kube_kubeadm_apiserver_extra_args: {}
 kube_kubeadm_controller_extra_args: {}
 

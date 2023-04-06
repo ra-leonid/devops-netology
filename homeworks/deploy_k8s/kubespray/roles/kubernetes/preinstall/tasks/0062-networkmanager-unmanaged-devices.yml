@@ -23,6 +23,6 @@
     content: |
       [keyfile]
       unmanaged-devices+=interface-name:kube-ipvs0;interface-name:nodelocaldns
-    dest: /etc/NetworkManager/conf.d/k8s.conf
+    dest: /etc/NetworkManager/conf.d/app.conf
     mode: 0644
   notify: Preinstall | reload NetworkManager

@@ -22,8 +22,8 @@
     - calico-node.service
     - containerd.service.d/http-proxy.conf
     - crio.service.d/http-proxy.conf
-    - k8s-certs-renew.service
-    - k8s-certs-renew.timer
+    - app-certs-renew.service
+    - app-certs-renew.timer
   register: services_removed
   tags:
     - services
@@ -305,7 +305,7 @@
     - /etc/etcd.env
     - /etc/calico
     - /etc/NetworkManager/conf.d/calico.conf
-    - /etc/NetworkManager/conf.d/k8s.conf
+    - /etc/NetworkManager/conf.d/app.conf
     - /etc/weave.env
     - /opt/cni
     - /etc/dhcp/dhclient.d/zdnsupdate.sh
@@ -338,7 +338,7 @@
     - "{{ bin_dir }}/crictl"
     - "{{ bin_dir }}/nerdctl"
     - "{{ bin_dir }}/netctl"
-    - "{{ bin_dir }}/k8s-certs-renew.sh"
+    - "{{ bin_dir }}/app-certs-renew.sh"
     - /var/lib/cni
     - /etc/openvswitch
     - /run/openvswitch

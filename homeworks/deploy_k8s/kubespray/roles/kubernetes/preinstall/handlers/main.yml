@@ -1,5 +1,5 @@
 ---
-- name: Preinstall | propagate resolvconf to k8s components
+- name: Preinstall | propagate resolvconf to app components
   command: /bin/true
   notify:
     - Preinstall | reload kubelet

@@ -126,8 +126,8 @@ First you will need the ids of your OpenStack instances that will run kubernetes
   +--------------------------------------+--------+----------------------------------+--------+-------------+
   | ID                                   | Name   | Tenant ID                        | Status | Power State |
   +--------------------------------------+--------+----------------------------------+--------+-------------+
-  | e1f48aad-df96-4bce-bf61-62ae12bf3f95 | k8s-1  | fba478440cb2444a9e5cf03717eb5d6f | ACTIVE | Running     |
-  | 725cd548-6ea3-426b-baaa-e7306d3c8052 | k8s-2  | fba478440cb2444a9e5cf03717eb5d6f | ACTIVE | Running     |
+  | e1f48aad-df96-4bce-bf61-62ae12bf3f95 | app-1  | fba478440cb2444a9e5cf03717eb5d6f | ACTIVE | Running     |
+  | 725cd548-6ea3-426b-baaa-e7306d3c8052 | app-2  | fba478440cb2444a9e5cf03717eb5d6f | ACTIVE | Running     |
   ```
 
 Then you can use the instance ids to find the connected [neutron](https://wiki.openstack.org/wiki/Neutron) ports (though they are now configured through using OpenStack):

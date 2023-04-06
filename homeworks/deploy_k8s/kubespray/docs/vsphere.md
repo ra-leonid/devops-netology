@@ -113,7 +113,7 @@ Example configuration:
 vsphere_vcenter_ip: "myvcenter.domain.com"
 vsphere_vcenter_port: 443
 vsphere_insecure: 1
-vsphere_user: "k8s@vsphere.local"
+vsphere_user: "app@vsphere.local"
 vsphere_password: "K8s_admin"
 vsphere_datacenter: "DATACENTER_name"
 vsphere_datastore: "DATASTORE_name"

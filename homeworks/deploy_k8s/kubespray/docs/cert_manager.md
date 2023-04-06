@@ -40,13 +40,13 @@ ingress_nginx_enabled: true
 For example, if you're using the Nginx ingress controller, you can secure the Prometheus ingress by adding the annotation `cert-manager.io/cluster-issuer: ca-issuer` and the `spec.tls` section to the `Ingress` resource definition.
 
 ```yaml
-apiVersion: networking.k8s.io/v1
+apiVersion: networking.app.io/v1
 kind: Ingress
 metadata:
-  name: prometheus-k8s
+  name: prometheus-app
   namespace: monitoring
   labels:
-    prometheus: k8s
+    prometheus: app
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: ca-issuer
@@ -63,7 +63,7 @@ spec:
         pathType: ImplementationSpecific
         backend:
           service:
-            name: prometheus-k8s
+            name: prometheus-app
             port:
               name: web
 ```

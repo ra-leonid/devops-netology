@@ -53,8 +53,8 @@ download_delegate: "{% if download_localhost %}localhost{% else %}{{ groups['kub
 # The docker_image_info_command might seems weird but we are using raw/endraw and `{{ `{{` }}` to manage the double jinja2 processing
 docker_image_pull_command: "{{ docker_bin_dir }}/docker pull"
 docker_image_info_command: "{{ docker_bin_dir }}/docker images -q | xargs -i {{ '{{' }} docker_bin_dir }}/docker inspect -f {% raw %}'{{ '{{' }} if .RepoTags }}{{ '{{' }} join .RepoTags \",\" }}{{ '{{' }} end }}{{ '{{' }} if .RepoDigests }},{{ '{{' }} join .RepoDigests \",\" }}{{ '{{' }} end }}' {% endraw %} {} | tr '\n' ','"
-nerdctl_image_info_command: "{{ bin_dir }}/nerdctl -n k8s.io images --format '{% raw %}{{ .Repository }}:{{ .Tag }}{% endraw %}' 2>/dev/null | grep -v ^:$ | tr '\n' ','"
-nerdctl_image_pull_command: "{{ bin_dir }}/nerdctl -n k8s.io pull --quiet {{ nerdctl_extra_flags }}"
+nerdctl_image_info_command: "{{ bin_dir }}/nerdctl -n app.io images --format '{% raw %}{{ .Repository }}:{{ .Tag }}{% endraw %}' 2>/dev/null | grep -v ^:$ | tr '\n' ','"
+nerdctl_image_pull_command: "{{ bin_dir }}/nerdctl -n app.io pull --quiet {{ nerdctl_extra_flags }}"
 crictl_image_info_command: "{{ bin_dir }}/crictl images --verbose | awk -F ': ' '/RepoTags|RepoDigests/ {print $2}' | tr '\n' ','"
 crictl_image_pull_command: "{{ bin_dir }}/crictl pull"
 
@@ -87,7 +87,7 @@ docker_containerd_version: 1.6.4
 
 # gcr and kubernetes image repo define
 gcr_image_repo: "gcr.io"
-kube_image_repo: "registry.k8s.io"
+kube_image_repo: "registry.app.io"
 
 # docker image repo define
 docker_image_repo: "docker.io"
@@ -890,9 +890,9 @@ calico_apiserver_image_tag: "{{ calico_apiserver_version }}"
 pod_infra_image_repo: "{{ kube_image_repo }}/pause"
 pod_infra_image_tag: "{{ pod_infra_version }}"
 netcheck_version: "v1.2.2"
-netcheck_agent_image_repo: "{{ docker_image_repo }}/mirantis/k8s-netchecker-agent"
+netcheck_agent_image_repo: "{{ docker_image_repo }}/mirantis/app-netchecker-agent"
 netcheck_agent_image_tag: "{{ netcheck_version }}"
-netcheck_server_image_repo: "{{ docker_image_repo }}/mirantis/k8s-netchecker-server"
+netcheck_server_image_repo: "{{ docker_image_repo }}/mirantis/app-netchecker-server"
 netcheck_server_image_tag: "{{ netcheck_version }}"
 netcheck_etcd_image_tag: "v3.4.17"
 weave_kube_image_repo: "{{ docker_image_repo }}/weaveworks/weave-kube"
@@ -939,7 +939,7 @@ coredns_image_repo: "{{ kube_image_repo }}{{'/coredns/coredns' if (coredns_image
 coredns_image_tag: "{{ coredns_version if (coredns_image_is_namespaced | bool) else (coredns_version | regex_replace('^v', '')) }}"
 
 nodelocaldns_version: "1.21.1"
-nodelocaldns_image_repo: "{{ kube_image_repo }}/dns/k8s-dns-node-cache"
+nodelocaldns_image_repo: "{{ kube_image_repo }}/dns/app-dns-node-cache"
 nodelocaldns_image_tag: "{{ nodelocaldns_version }}"
 
 dnsautoscaler_version: 1.8.5
@@ -1019,7 +1019,7 @@ azure_csi_livenessprobe_image_tag: "v2.5.0"
 azure_csi_node_registrar_image_tag: "v2.4.0"
 azure_csi_snapshotter_image_tag: "v3.0.3"
 azure_csi_plugin_version: "v1.10.0"
-azure_csi_plugin_image_repo: "mcr.microsoft.com/k8s/csi"
+azure_csi_plugin_image_repo: "mcr.microsoft.com/app/csi"
 azure_csi_plugin_image_tag: "{{ azure_csi_plugin_version }}"
 
 gcp_pd_csi_image_repo: "gke.gcr.io"

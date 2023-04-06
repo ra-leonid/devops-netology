@@ -38,7 +38,7 @@ dns_autoscaler_deployment_nodeselector: "kubernetes.io/os: linux"
 
 # etcd metrics
 # etcd_metrics_service_labels:
-#   k8s-app: etcd
+#   app-app: etcd
 #   app.kubernetes.io/managed-by: Kubespray
 #   app: kube-prometheus-stack-kube-etcd
 #   release: prometheus-stack

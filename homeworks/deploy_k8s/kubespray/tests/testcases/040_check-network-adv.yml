@@ -101,14 +101,14 @@
       run_once: true
 
     - name: Get kube-proxy logs
-      command: "{{ bin_dir }}/kubectl -n kube-system logs -l k8s-app=kube-proxy"
+      command: "{{ bin_dir }}/kubectl -n kube-system logs -l app-app=kube-proxy"
       no_log: false
       when:
         - inventory_hostname == groups['kube_control_plane'][0]
         - not connectivity_check is success
 
     - name: Get logs from other apps
-      command: "{{ bin_dir }}/kubectl -n kube-system logs -l k8s-app={{ item }} --all-containers"
+      command: "{{ bin_dir }}/kubectl -n kube-system logs -l app-app={{ item }} --all-containers"
       when:
         - inventory_hostname == groups['kube_control_plane'][0]
         - not connectivity_check is success
@@ -174,7 +174,7 @@
       shell:
         cmd: |
           cat <<EOF | {{ bin_dir }}/kubectl create -f -
-          apiVersion: "k8s.cni.cncf.io/v1"
+          apiVersion: "app.cni.cncf.io/v1"
           kind: NetworkAttachmentDefinition
           metadata:
             name: macvlan-conf
@@ -213,7 +213,7 @@
           metadata:
             name: samplepod
             annotations:
-              k8s.v1.cni.cncf.io/networks: macvlan-conf
+              app.v1.cni.cncf.io/networks: macvlan-conf
           spec:
             containers:
             - name: samplepod

@@ -53,7 +53,7 @@
       - name: kubelet_logs
         cmd: journalctl -u kubelet --no-pager
       - name: coredns_logs
-        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l k8s-app=coredns -o jsonpath={.items..metadata.name}`;
+        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app-app=coredns -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system; done"
       - name: apiserver_logs
         cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l component=kube-apiserver -o jsonpath={.items..metadata.name}`;
@@ -65,21 +65,21 @@
         cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l component=kube-scheduler -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system; done"
       - name: proxy_logs
-        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l k8s-app=kube-proxy -o jsonpath={.items..metadata.name}`;
+        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app-app=kube-proxy -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system; done"
       - name: nginx_logs
-        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l k8s-app=kube-nginx -o jsonpath={.items..metadata.name}`;
+        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app-app=kube-nginx -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system; done"
       - name: flannel_logs
         cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app=flannel -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system flannel-container; done"
         when: '{{ kube_network_plugin == "flannel" }}'
       - name: canal_logs
-        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l k8s-app=canal-node -o jsonpath={.items..metadata.name}`;
+        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app-app=canal-node -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system flannel; done"
         when: '{{ kube_network_plugin == "canal" }}'
       - name: calico_policy_logs
-        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l k8s-app=calico-kube-controllers -o jsonpath={.items..metadata.name}`;
+        cmd: "for i in `{{ bin_dir }}/kubectl get pods -n kube-system -l app-app=calico-kube-controllers -o jsonpath={.items..metadata.name}`;
           do {{ bin_dir }}/kubectl logs ${i} -n kube-system ; done"
         when: '{{ kube_network_plugin in ["canal", "calico"] }}'
       - name: helm_show_releases_history

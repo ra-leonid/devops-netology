@@ -36,7 +36,7 @@
     mode: 0644
   with_items:
     - { name: nvidia-driver-install-daemonset, file: nvidia-driver-install-daemonset.yml, type: daemonset }
-    - { name: k8s-device-plugin-nvidia-daemonset, file: k8s-device-plugin-nvidia-daemonset.yml, type: daemonset }
+    - { name: app-device-plugin-nvidia-daemonset, file: app-device-plugin-nvidia-daemonset.yml, type: daemonset }
   register: container_engine_accelerator_manifests
   when:
     - inventory_hostname == groups['kube_control_plane'][0] and nvidia_driver_install_container

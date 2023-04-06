@@ -43,7 +43,7 @@
   run_once: yes
   when: kubeconfig_localhost
 
-- name: Wait for k8s apiserver
+- name: Wait for app apiserver
   wait_for:
     host: "{{ kube_apiserver_access_address }}"
     port: "{{ kube_apiserver_port }}"

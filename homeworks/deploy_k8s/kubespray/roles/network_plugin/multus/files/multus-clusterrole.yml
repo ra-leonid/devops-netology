@@ -1,10 +1,10 @@
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.app.io/v1
 metadata:
   name: multus
 rules:
-  - apiGroups: ["k8s.cni.cncf.io"]
+  - apiGroups: ["app.cni.cncf.io"]
     resources:
       - '*'
     verbs:
@@ -19,7 +19,7 @@ rules:
       - update
   - apiGroups:
       - ""
-      - events.k8s.io
+      - events.app.io
     resources:
       - events
     verbs:

@@ -51,7 +51,7 @@ Additionally, a StorageClass object (`storageclasses.storage.k8s.io`) is also
 created for each storage class:
 
 ```bash
-$ kubectl get storageclasses.storage.k8s.io
+$ kubectl get storageclasses.storage.app.io
 NAME            PROVISIONER                    RECLAIMPOLICY
 fast-disks      kubernetes.io/no-provisioner   Delete
 local-storage   kubernetes.io/no-provisioner   Delete
