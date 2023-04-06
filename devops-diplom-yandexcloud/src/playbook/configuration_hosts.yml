@@ -1,0 +1,53 @@
+---
+- name: Change local setup
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Make sure all urls are deleted
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        state: absent
+        regexp: "{{ url }}"
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Add binding ip to dns
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+#        regexp: "^(.*){{ item }}{{ url }}(.*)$"
+        line: "{{ hostvars['kube_control_plane'].ansible_host }}  {{ item }}{{ url }}"
+        owner: root
+        group: root
+        mode: '0644'
+      with_items:
+        - ""
+        - atlantis.
+        - grafana.
+        - jenkins.
+
+- name: Copy "~/.kube/config"
+  hosts: kube_control_plane
+  tasks:
+    - name: Store config
+      become: true
+      ansible.builtin.fetch:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "~/.kube/config"
+        flat: true
+        mode: "755"
+
+- name: Change local setup
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Add proxy line in "~/.kube/config"
+      lineinfile:
+        path: ~/.kube/config
+        insertafter: '^\s*server: https://127\.0\.0\.1:6443\s*$'
+        line: "    proxy-url: socks5://localhost:{{ proxy_port }}"
+    - name: Replace the internal ip with an external one in "~/.kube/config"
+      ansible.builtin.replace:
+        path: ~/.kube/config
+        regexp: "127.0.0.1"
+        replace: "{{ hostvars['kube_control_plane'].ansible_host }}"

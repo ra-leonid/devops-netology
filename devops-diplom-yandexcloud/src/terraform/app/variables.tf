@@ -1,3 +1,7 @@
+variable "url" {
+  default = ""
+}
+
 variable "yc_key_file" {
   default = ".secrets/.key.json"
 }

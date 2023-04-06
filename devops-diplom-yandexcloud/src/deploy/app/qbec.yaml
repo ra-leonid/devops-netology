@@ -4,18 +4,19 @@ metadata:
   name: app
 spec:
   environments:
+# BEGIN debug ANSIBLE MANAGED BLOCK
     debug:
       defaultNamespace: debug
-      server: https://192.168.59.127:8443
-    prod:
-      defaultNamespace: prod
-      server: https://192.168.59.103:8443
+      server: https://192.168.59.132:8443
+# END debug ANSIBLE MANAGED BLOCK
+# BEGIN stage ANSIBLE MANAGED BLOCK
     stage:
       defaultNamespace: stage
-      server: https://192.168.59.103:8443
+      server: https://10.127.0.20:8443
+# END stage ANSIBLE MANAGED BLOCK
   vars:
     external:
       - name: url
-        default: meow-app.local
+        default: meow-app.duckdns.org
 #      - name: service1_secret
 #        default: changeme # fake value

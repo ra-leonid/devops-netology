@@ -190,7 +190,8 @@ terraform plan
 terraform apply -auto-approve
 terraform destroy -auto-approve
 
-ssh -D 1337 -f -C -q -N ubuntu@84.201.128.134 -p 22322
+ssh -D 1337 -f -C -q -N ubuntu@62.84.126.49 -p 22322
+sudo systemctl restart ssh
 ```
 
 # Создание тестового приложения
@@ -224,6 +225,10 @@ docker image push raleonid/app-meow:0.0.1
 **TODO**: Реализовать автокорректировку окружение в файлах qbec.yaml при деплое в облако.
 
 ### Команды развертывания инфраструктуры и деплой приложений:
+
+Перед деплоем необходимо выполнить следующие настройки:
+* Задать переменную с адресом приложения `export TF_VAR_url=meow-app.local`.
+* `export TF_VAR_url=meow-app.duckdns.org`
 
 | Команда                                 |                                      Назначение                                       |
 |:----------------------------------------|:-------------------------------------------------------------------------------------:|
@@ -381,3 +386,35 @@ kubectl -n debug get secret jenkins -o jsonpath="{.data.jenkins-admin-password}"
 ```
 
 **TODO**: Реализовать безопасное хранение token и secret, реализовать установку с помощью qbec.
+```commandline
+kubectl create namespace debug && kubectl config set-context --current --namespace=debug
+kubectl apply -n debug -f jenkins-sa.yaml 
+helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f values2.yaml
+helm install jenkins jenkins/jenkins -f values2.yaml
+
+helm uninstall jenkins
+kubectl delete -f jenkins-sa.yaml
+kubectl get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
+
+minikube service jenkins --url
+```
+
+```commandline
+docker image build -t raleonid/jenkins .
+docker push raleonid/jenkins
+
+kubectl create namespace jenkins
+kubectl config set-context --current --namespace=jenkins
+kubectl create -f jenkins-instance-deploy.yml
+minikube service jenkins --url -n jenkins
+
+kubectl exec jenkins-6b57967cc8-jld7q cat /var/jenkins_home/secrets/initialAdminPassword
+
+diff <(kubectl -n jenkins get role jenkins -o yaml) <(kubectl -n jenkins get role jenkins -o yaml)
+ssh -D 1337 -f -C -q -N ubuntu@158.160.61.105 -p 22322
+
+ssh ubuntu@158.160.46.173 -p 22322
+ssh ubuntu@10.127.0.20 -p 22322
+ssh ubuntu@10.127.0.20 -p 1337
+ssh -o ProxyCommand="ssh -W %h:%p 158.160.46.173" 10.127.0.20
+```
