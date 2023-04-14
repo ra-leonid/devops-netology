@@ -1,0 +1,11 @@
+---
+all:
+  hosts:
+    kube_control_plane:
+      ansible_host: 10.127.0.5
+      ansible_user: ubuntu
+    bastion:
+      ansible_host: 51.250.10.123
+      ansible_user: ubuntu
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ProxyCommand=\"ssh -W %h:%p ubuntu@51.250.10.123 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null\""
