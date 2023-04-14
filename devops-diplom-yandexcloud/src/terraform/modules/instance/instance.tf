@@ -47,6 +47,28 @@ resource "yandex_compute_instance" "instance" {
   }
 }
 
+output "instance1" {
+  #value = join("; ", yandex_compute_instance.instance.*.network_interface.0.ip_address)
+  value = yandex_compute_instance.instance
+}
+output "instance" {
+  value = [for instance in yandex_compute_instance.instance : instance]
+}
+
+output "instance2" {
+  value = [ for v in yandex_compute_instance.instance : {
+    address = v.network_interface.0.ip_address
+    subnet_id = v.network_interface.0.subnet_id
+  }
+  ]
+}
+
+output "instance3" {
+  value = tolist([ for v in yandex_compute_instance.instance : {
+    address = v.network_interface.0.ip_address
+    subnet_id = v.network_interface.0.subnet_id
+  }])
+}
 
 output "internal_ip_address_instance" {
   #value = join("; ", yandex_compute_instance.instance.*.network_interface.0.ip_address)

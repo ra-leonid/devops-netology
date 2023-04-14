@@ -1,0 +1,27 @@
+apiVersion: qbec.io/v1alpha1
+kind: App
+metadata:
+  name: app
+spec:
+  environments:
+# BEGIN debug ANSIBLE MANAGED BLOCK
+    debug:
+      defaultNamespace: debug
+      server: https://192.168.59.132:8443
+# END debug ANSIBLE MANAGED BLOCK
+# BEGIN stage ANSIBLE MANAGED BLOCK
+    stage:
+      defaultNamespace: stage
+      server: https://10.127.0.10:6443
+# END stage ANSIBLE MANAGED BLOCK
+# BEGIN prod ANSIBLE MANAGED BLOCK
+    prod:
+      defaultNamespace: prod
+      server: https://10.130.0.32:6443
+# END prod ANSIBLE MANAGED BLOCK
+  vars:
+    external:
+      - name: url
+        default: meow-app.duckdns.org
+#      - name: service1_secret
+#        default: changeme # fake value

@@ -36,13 +36,13 @@ variable "stage_instance" {
       count = 1
       cores = 2
       disk_size = 50
-      memory = 2
+      memory = 4
     }
     node = {
       count = 1
       cores = 2
       disk_size = 200
-      memory = 2
+      memory = 4
     }
   }
   description = "Инфраструктура k8s-кластера для stage"

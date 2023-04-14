@@ -1,28 +1,29 @@
-resource "yandex_vpc_route_table" "netology-rt" {
-  name           = "nat-instance-route"
-  network_id = "${yandex_vpc_network.netology.id}"
-
-  static_route {
-    destination_prefix = "0.0.0.0/0"
-    next_hop_address   = "${yandex_compute_instance.bastion.network_interface.0.ip_address}"
-  }
-  depends_on = [
-    yandex_vpc_network.netology,
-    yandex_compute_instance.bastion
-  ]
-}
 
 resource "yandex_lb_target_group" "site-devops-lb-tg" {
   name      = "netology-tg"
   region_id = "ru-central1"
 
+#  dynamic "target" {
+#    for_each = yandex_compute_instance_group.site-devops-ig.instances
+#    content {
+#      subnet_id = "${yandex_vpc_subnet.private.id}"
+#      address   = "${target.value["network_interface"]["0"]["ip_address"]}"
+#    }
+#  }
   dynamic "target" {
-    for_each = yandex_compute_instance_group.site-devops-ig.instances
+    for_each = [for s in yandex_compute_instance_group.site-devops-ig.instances : {
+      address   = s.network_interface.0.ip_address
+      subnet_id = s.network_interface.0.subnet_id
+    }]
     content {
-      subnet_id = "${yandex_vpc_subnet.public.id}"
-      address   = "${target.value["network_interface"]["0"]["ip_address"]}"
+      subnet_id  = target.value.subnet_id
+      address = target.value.address
     }
   }
+  depends_on = [
+    yandex_compute_instance_group.site-devops-ig
+  ]
+
 }
 
 resource "yandex_lb_network_load_balancer" "site-devops-lb" {

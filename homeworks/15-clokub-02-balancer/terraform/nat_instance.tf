@@ -1,3 +1,17 @@
+resource "yandex_vpc_route_table" "netology-rt" {
+  name           = "nat-instance-route"
+  network_id = "${yandex_vpc_network.netology.id}"
+
+  static_route {
+    destination_prefix = "0.0.0.0/0"
+    next_hop_address   = "${yandex_compute_instance.bastion.network_interface.0.ip_address}"
+  }
+  depends_on = [
+    yandex_vpc_network.netology,
+    yandex_compute_instance.bastion
+  ]
+}
+
 data "yandex_compute_image" "nat-instance-image" {
   family = "nat-instance-ubuntu"
 }

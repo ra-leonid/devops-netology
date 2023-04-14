@@ -11,4 +11,4 @@
         block: |2
               {{ app_namespace }}:
                 defaultNamespace: {{ app_namespace }}
-                server: https://{{ hostvars['kube_control_plane'].ansible_host }}:8443
+                server: https://{{ hostvars['node1'].ansible_host }}:6443

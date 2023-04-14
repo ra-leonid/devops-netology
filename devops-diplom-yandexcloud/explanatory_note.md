@@ -73,7 +73,7 @@ yc iam service-account create --name sa-terraform --folder-name new --descriptio
 yc resource-manager folder add-access-binding new --role editor --subject serviceAccount:aje32701sqo6nkcbvdsp
 
 # Создать файл авторизации
-yc iam key create --folder-name new --service-account-name sa-terraform --output .key.json
+yc iam key create --folder-name new --service-account-name sa-terraform --output secrets/.key.json
 ```
 2. Создаём статический ключ доступа:
 ```commandline
@@ -198,7 +198,6 @@ sudo systemctl restart ssh
 * Создаем образ командой ```docker image build -t raleonid/app-meow:0.0.1 .```
 * Запускаем контейнер командой ```docker run -d -p 8080:80 raleonid/app-meow:0.0.1```
 * Проверяем
-* Отправляем образ в удаленный репозиторий 
 
 ```commandline
 # Авторизуемся
@@ -229,6 +228,7 @@ docker image push raleonid/app-meow:0.0.1
 Перед деплоем необходимо выполнить следующие настройки:
 * Задать переменную с адресом приложения `export TF_VAR_url=meow-app.local`.
 * `export TF_VAR_url=meow-app.duckdns.org`
+
 
 | Команда                                 |                                      Назначение                                       |
 |:----------------------------------------|:-------------------------------------------------------------------------------------:|
@@ -299,15 +299,14 @@ mkdir -p src/deploy/kube-prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm show values prometheus-community/kube-prometheus-stack > src/deploy/kube-prometheus/values.yaml
 ```
-2. В настройках чарта меняем (**только указанные значения!**) в секции `grafana.ingress`:
+2. В настройках чарта меняем (**только указанные значения!**) в секции `grafana.service`:
 ```yaml
 //...
 grafana:
-  ingress:
-    enabled: true
 //...
-    hosts:
-      - grafana.meow-app.ru
+  service:
+    type: NodePort
+    nodePort: 30001
 //...
 ```
 
@@ -315,6 +314,11 @@ grafana:
 3. Команда деплоя:
 ```commandline
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --create-namespace -n debug -f src/deploy/kube-prometheus/values.yaml --set grafana.ingress.hosts[0]=grafana.meow-app.local
+```
+
+Для получения пароля, выполняем команду:
+```commandline
+kubectl get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 ```
 
 **TODO**: Реализовать безопасное хранение пароля админа, реализовать установку с помощью qbec.
@@ -365,56 +369,79 @@ helm show values jenkins/jenkins > src/deploy/jenkins/values.yaml
 //...
 controller:
 //...
-  ingress:
-    enabled: true
+  jenkinsUrl: "http://158.160.100.209:9000/"
 //...
-    apiVersion: "networking.k8s.io/v1"
+  serviceType: NodePort
+  nodePort: 30002
 //...
-    hostName: jenkins.meow-app.ru
- //...
+  installPlugins:
+    - github-branch-source:1703.vd5a_2b_29c6cdc
+    - kubernetes:3910.ve59cec5e33ea_
+    - docker-workflow:563.vd5d2e5c4007f
+//...
+persistence:
+  storageClass: nfs
+//...
+serviceAccount:
+  create: false 
+  name: jenkins
+
 ```
 
 Итоговый файл настроек [values.yaml](src/deploy/jenkins/values.yaml).
-3. Команда деплоя:
-```commandline
-helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml --set controller.ingress.hostName=jenkins.meow-app.local
+3. Чтобы jenkins мог сохранять своё состояние, необходимо установить `nfs-provigioner`. Для этого, в makefile создаем 
+отдельный подготовительный этап перед деплоем всех приложений, в которы также выносим подключение всех необходимых 
+репозиториев чартов:
+```makefile
+configure_deploy:
+	helm repo add jenkins https://charts.jenkins.io
+	helm repo add nfs-ganesha-server-and-external-provisioner https://kubernetes-sigs.github.io/nfs-ganesha-server-and-external-provisioner/
+	helm repo update
+	helm upgrade --install nfs-server nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
 ```
-
-Для получения пароля, выполняем команду:
+Создаём playbook по установке на нодах пакетов, необходимых для работы `nfs-provigioner`. Создаём отдельную папку:
+[nfs.yml](src/playbook/nfs.yml).
+4. Команды деплоя:
 ```commandline
-kubectl -n debug get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
+#helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f src/deploy/jenkins/values.yaml --set controller.ingress.hostName=jenkins.meow-app.local
+kubectl -n $(ns) apply -f ./src/deploy/jenkins/sa.yaml
+helm upgrade --install jenkins -n $(ns) -f ./src/deploy/jenkins/values.yaml jenkins/jenkins
 ```
-
-**TODO**: Реализовать безопасное хранение token и secret, реализовать установку с помощью qbec.
+5. Для получения пароля, выполняем команду:
 ```commandline
-kubectl create namespace debug && kubectl config set-context --current --namespace=debug
-kubectl apply -n debug -f jenkins-sa.yaml 
-helm upgrade --install jenkins jenkins/jenkins --create-namespace -n debug -f values2.yaml
-helm install jenkins jenkins/jenkins -f values2.yaml
-
-helm uninstall jenkins
-kubectl delete -f jenkins-sa.yaml
-kubectl get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
-
-minikube service jenkins --url
+kubectl -n stage get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
 ```
+Пароль:
+cudRXMSYwahYbRS5jxDxgy
+
+6. Внутренняя настройка Jenkins:
+   1. Создаем credentials для подключения к репозиториям github:
+
+[jenkins-credentials.png](./img/jenkins-credentials.png)
+
+   2. Создаём Multibranch Pipeline, настраиваем его работу с проектом в репозитории github
+   3. В репозитории github создаём webhook на события `Branch or tag creation` и `Commit comments`.
+
+   ![](img/jenkins-webhook.png)
+
+   ![](img/jenkins-webhook-test.png)
+
+   4. Создаём пайплайн исходя из условий задачи.
+      1. _При любом коммите в репозиторий с тестовым приложением, происходит сборка и отправка в регистр Docker образа._
+         Т.к. веток может быть много, чтобы при коммитах из разных веток, образ не перезаписывался, нам и в этой задаче нужно отправлять с тегами.
+         Условимся, что в данном случае, имя тега будет состоять из имени ветки и билда сборки. Например `main-46`.
+      2. 
+
+**TODO**: 
+1. Реализовать безопасное хранение token и secret
+2. Реализовать установку с помощью qbec.
+
+# Создание тестового приложения
+* Создаем образ командой ```docker image build -t raleonid/inbound-agent:3107.v665000b_51092-5 .```
 
 ```commandline
-docker image build -t raleonid/jenkins .
-docker push raleonid/jenkins
-
-kubectl create namespace jenkins
-kubectl config set-context --current --namespace=jenkins
-kubectl create -f jenkins-instance-deploy.yml
-minikube service jenkins --url -n jenkins
-
-kubectl exec jenkins-6b57967cc8-jld7q cat /var/jenkins_home/secrets/initialAdminPassword
-
-diff <(kubectl -n jenkins get role jenkins -o yaml) <(kubectl -n jenkins get role jenkins -o yaml)
-ssh -D 1337 -f -C -q -N ubuntu@158.160.61.105 -p 22322
-
-ssh ubuntu@158.160.46.173 -p 22322
-ssh ubuntu@10.127.0.20 -p 22322
-ssh ubuntu@10.127.0.20 -p 1337
-ssh -o ProxyCommand="ssh -W %h:%p 158.160.46.173" 10.127.0.20
+# Авторизуемся
+docker login
+# Отправляем в докер-репозиторий
+docker image push raleonid/inbound-agent:3107.v665000b_51092-5
 ```

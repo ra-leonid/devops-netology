@@ -420,6 +420,10 @@ alertmanager:
     interval: ""
     selfMonitor: true
 
+    ## Additional labels
+    ##
+    additionalLabels: {}
+
     ## SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.
     ##
     sampleLimit: 0
@@ -778,7 +782,7 @@ grafana:
   ingress:
     ## If true, Grafana Ingress will be created
     ##
-    enabled: true
+    enabled: false
 
     ## IngressClassName for Grafana Ingress.
     ## Should be provided if Ingress is enable.
@@ -798,9 +802,9 @@ grafana:
     ## Hostnames.
     ## Must be provided if Ingress is enable.
     ##
-    hosts:
-      - grafana.meow-app.ru
-    # hosts: []
+    # hosts:
+    #   - grafana.domain.com
+    hosts: []
 
     ## Path for grafana ingress
     path: /
@@ -890,6 +894,10 @@ grafana:
   ## Passed to grafana subchart and used by servicemonitor below
   ##
   service:
+    type: NodePort
+    targetPort: 3000
+    port: 3000
+    nodePort: 30001
     portName: http-web
 
   serviceMonitor:
@@ -2290,6 +2298,10 @@ prometheus:
     enabled: false
     interval: ""
 
+    ## Additional labels
+    ##
+    additionalLabels: {}
+
     ## scheme: HTTP scheme to use for scraping. Can be used with `tlsConfig` for example if using istio mTLS.
     scheme: ""
 
@@ -2571,6 +2583,10 @@ prometheus:
     ##
     interval: ""
     selfMonitor: true
+
+    ## Additional labels
+    ##
+    additionalLabels: {}
 
     ## SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.
     ##
@@ -3488,6 +3504,10 @@ thanosRuler:
     ##
     interval: ""
     selfMonitor: true
+
+    ## Additional labels
+    ##
+    additionalLabels: {}
 
     ## SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.
     ##

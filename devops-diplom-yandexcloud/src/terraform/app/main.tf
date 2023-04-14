@@ -9,29 +9,6 @@ module "vpc" {
   subnets = local.vpc_subnets[terraform.workspace]
 }
 
-module "all_nodes" {
-  source = "../modules/instance"
-  for_each = local.name_set
-
-  instance_count = local.instance[terraform.workspace][each.key].count
-
-  subnets       = module.vpc.subnets
-  image         = var.image
-  name          = each.value
-  description   = "k8s ${each.value}"
-  users         = var.tf_user
-  cores         = local.instance[terraform.workspace][each.key].cores
-  #boot_disk     = "network-ssd"
-  boot_disk     = "network-hdd"
-  disk_size     = local.instance[terraform.workspace][each.key].disk_size
-  nat           = false
-  memory        = local.instance[terraform.workspace][each.key].memory
-  core_fraction = "100"
-  depends_on = [
-    module.vpc
-  ]
-}
-
 locals {
   name_set = {
     control_plane = "control-plane"

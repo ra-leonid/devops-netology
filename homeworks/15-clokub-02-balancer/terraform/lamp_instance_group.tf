@@ -42,7 +42,9 @@ resource "yandex_compute_instance_group" "site-devops-ig" {
 
     network_interface {
       network_id = "${yandex_vpc_network.netology.id}"
-      subnet_ids = ["${yandex_vpc_subnet.public.id}"]
+#      subnet_ids = ["${yandex_vpc_subnet.public.id}"]
+      subnet_ids = ["${yandex_vpc_subnet.private.id}"]
+      nat = false
     }
 
     network_settings {
@@ -52,7 +54,7 @@ resource "yandex_compute_instance_group" "site-devops-ig" {
     metadata = {
       ssh-keys = "${var.tf_user}:${file("~/.ssh/id_rsa.pub")}"
       user-data = file("${path.module}/data/cloud-config.yml")
-  }
+    }
   }
 
   scale_policy {

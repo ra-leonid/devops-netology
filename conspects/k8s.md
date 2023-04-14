@@ -13,7 +13,7 @@ kubectl api-resources --verbs=list --namespaced -o name \
 | xargs -n 1 kubectl get --show-kind --ignore-not-found -n default
 
 kubectl api-resources --verbs=list --namespaced -o name \ 
-| xargs -n 1 kubectl get --show-kind --ignore-not-found -n kube-node-lease
+| xargs -n 1 kubectl get --show-kind --ignore-not-found -n stage
 
 
 # Получить список подов в текущем namespace:
@@ -77,7 +77,7 @@ kubectl edit svc grafana-web
 kubectl delete deployment,pvc,pv,storageclass --all
 kubectl delete pvc --all
 kubectl delete svc grafana-web
-kubectl --namespace debug delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+kubectl --namespace stage delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
 
 # Изменить манифест деплоймента командой (здесь мы изменяем количество реплик на 5):
 kubectl scale deploy hello-node -n default --replicas=5
@@ -96,7 +96,9 @@ kubectl get ns
 # Изменить namespace
 kubectl config set-context --current --namespace=debug
 kubectl config set-context --current --namespace=default
-kubectl config set-context --current --namespace=jenkins
+kubectl config set-context --current --namespace=prod
+kubectl config set-context --current --namespace=stage
+kubectl config set-context --current --namespace=devops-tools
 
 # Просмотр логов:
 kubectl logs hello-node-697897c86-fvngg
@@ -107,6 +109,22 @@ kubectl logs jenkins-0 --all-containers
 kubectl port-forward hello-node-697897c86-fvngg 8080:8080
 kubectl port-forward service/grafana 3000:3000
 kubectl port-forward service/jenkins 8080:8080
+kubectl port-forward service/monitoring-grafana 8080:3000
+kubectl port-forward pod/monitoring-grafana-694bffd759-pk4p5 8080:3000
+
+kubectl port-forward service/app-meow 8080:80
+kubectl port-forward -n ingress-nginx pod/ingress-nginx-controller-bflts 8080:80
+kubectl describe ingress/app-meow
+kubectl describe service/app-meow
+kubectl -n ingress-nginx logs pod/ingress-nginx-controller-bflts
+
+kubectl port-forward svc/jenkins 8080:30002
+helm uninstall jenkins -n stage
+
+kubectl apply -n stage -f src/deploy/jenkins/jenkins-sa.yaml
+helm upgrade --install jenkins jenkins/jenkins --create-namespace -n stage -f src/deploy/jenkins/values2.yaml
+
+kubectl edit ingress/app-meow
 # Проверка
 curl http://127.0.0.1:8080
 

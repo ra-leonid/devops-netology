@@ -1,12 +1,18 @@
 resource "yandex_alb_target_group" "site-devops-alb-tg" {
 
   dynamic "target" {
-    for_each = yandex_compute_instance_group.site-devops-ig.instances
+    for_each = [for s in yandex_compute_instance_group.site-devops-ig.instances : {
+      address   = s.network_interface.0.ip_address
+      subnet_id = s.network_interface.0.subnet_id
+    }]
     content {
-      subnet_id = "${yandex_vpc_subnet.public.id}"
-      ip_address   = "${target.value["network_interface"]["0"]["ip_address"]}"
+      subnet_id  = target.value.subnet_id
+      ip_address = target.value.address
     }
   }
+  depends_on = [
+    yandex_compute_instance_group.site-devops-ig
+  ]
 }
 
 resource "yandex_alb_backend_group" "site-devops-alb-bg" {
@@ -33,6 +39,9 @@ resource "yandex_alb_backend_group" "site-devops-alb-bg" {
     }
     //http2 = "true"
   }
+  depends_on = [
+    yandex_alb_target_group.site-devops-alb-tg
+  ]
 }
 
 resource "yandex_alb_http_router" "site-devops-alb-http-router" {
@@ -50,6 +59,18 @@ resource "yandex_alb_virtual_host" "site-devops-virtual-host" {
         timeout          = "3s"
       }
     }
+  }
+  depends_on = [
+    yandex_alb_http_router.site-devops-alb-http-router,
+    yandex_alb_backend_group.site-devops-alb-bg
+  ]
+}
+
+resource "yandex_vpc_address" "addr-web" {
+  name = "webtestappAddress"
+
+  external_ipv4_address {
+    zone_id = "ru-central1-a"
   }
 }
 
@@ -69,6 +90,7 @@ resource "yandex_alb_load_balancer" "site-devops-alb" {
     endpoint {
       address {
         external_ipv4_address {
+          address = yandex_vpc_address.addr-web.external_ipv4_address[0].address
         }
       }
       ports = [ 80 ]
@@ -79,7 +101,13 @@ resource "yandex_alb_load_balancer" "site-devops-alb" {
       }
     }
   }
-/*
+  depends_on = [
+    yandex_vpc_address.addr-web,
+    yandex_alb_http_router.site-devops-alb-http-router,
+    yandex_alb_virtual_host.site-devops-virtual-host
+  ]
+
+  /*
   log_options {
     discard_rule {
       http_code_intervals = ["2XX"]
