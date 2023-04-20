@@ -9,7 +9,7 @@ sudo apt-get install openvpn
 vim ~/vpnbook/auth.txt
 
 vpnbook
-dd4e58m
+4fmz742
 
 Редактируем файл подключения к прокси:
 vim vpnbook-pl226-udp53.ovpn

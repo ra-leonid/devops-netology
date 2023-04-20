@@ -1,48 +1,25 @@
 
 ns ?= stage
+appStartTag ?= "v0.0.5"
 
-ifeq ($(ns),debug)
-	TARGET_ALL := deploy_k8s pause local_setting deploy
-	TARGET_DESTROY := delete destroy_debug
-	SLEEP_COUNT := 3
-else
-	TARGET_ALL := init plan apply pause setting_nfs deploy_k8s pause configuring_access_to_k8s tunnel local_setting deploy
-	TARGET_DESTROY := destroy_cloud
-	SLEEP_COUNT := 120
-endif
+SLEEP_COUNT := 120
 
-all: $(TARGET_ALL)
+all: init apply pause setting_nfs deploy_k8s pause configuring_access_to_k8s tunnel local_setting deploy
 
-destroy: $(TARGET_DESTROY)
+destroy:
+	terraform destroy -auto-approve
 
 init:
-	cd ./src/terraform/app && terraform init -reconfigure -backend-config=./.secrets/backend.conf
-	# cd ./src/terraform/app && terraform init
-	# cd ./src/terraform/app && terraform workspace new $(ns)
-
-plan:
-	cd ./src/terraform/app && terraform plan
+	terraform init -reconfigure -backend-config=./.secrets/backend.conf
+	# terraform init
+	terraform workspace new $(ns)
 
 apply:
-	cd ./src/terraform/app && terraform workspace select $(ns)
-	cd ./src/terraform/app && terraform apply -auto-approve
+	terraform workspace select $(ns)
+	terraform apply -auto-approve
 
 deploy_k8s:
-ifeq ($(ns),debug)
-	minikube delete
-	minikube start \
-		--vm-driver=virtualbox \
-		--kubernetes-version=v1.23.0 \
-		--memory=6g --bootstrapper=kubeadm \
-		--extra-config=kubelet.authentication-token-webhook=true \
-		--extra-config=kubelet.authorization-mode=Webhook \
-		--extra-config=scheduler.bind-address=0.0.0.0 \
-		--extra-config=controller-manager.bind-address=0.0.0.0
-	minikube addons disable metrics-server
-	minikube addons enable ingress
-else
 	cd ./src/vendor/kubespray && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i ./inventory/mycluster/hosts.yaml --become --become-user=root cluster.yml
-endif
 
 pause:
 	echo "Wait for $(SLEEP_COUNT) seconds stupid k8s creating..."
@@ -51,14 +28,6 @@ pause:
 
 tunnel:
 	cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml ssh_tunnel.yml
-
-local_setting:
-ifeq ($(ns),debug)
-	sed -e 's/$${namespace}/$(ns)/; s/$${url}/$(TF_VAR_url)/' src/terraform/app/templates/group_vars_localhost.tpl > src/playbook/group_vars/all/localhost/vars.yml
-	@sed -e 's/$${ip_control_plane}/$(shell minikube ip)/; s/$${ansible_user}/$(USER)/' src/terraform/app/templates/inventory.tpl > src/playbook/inventory.yml
-endif
-	cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml configuration_qbec.yml
-	#cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml -K configuration_hosts.yml
 
 setting_nfs:
 	cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml nfs.yml
@@ -72,29 +41,25 @@ configure_deploy:
 	helm upgrade --install nfs-server nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner
 
 deploy_app:
-	cd ./src/deploy/app && qbec apply $(ns) --vm:ext-str url=$$TF_VAR_url --strict-vars --yes
+	rm -Rf ./src/deploy/app
+	git clone https://github.com/ra-diplom1/app-meow.git ./src/deploy/app
+	helm upgrade --install app-meow ./src/deploy/app/deploy --create-namespace -n $(ns) --set image.tag=$(appStartTag)
 
 deploy_monitoring:
 	helm upgrade --install monitoring prometheus-community/kube-prometheus-stack --create-namespace -n $(ns) -f src/deploy/kube-prometheus/values.yaml
 
 deploy_atlantis:
-	helm upgrade --install atlantis runatlantis/atlantis --create-namespace -n $(ns) -f src/deploy/atlantis/values.yaml --set ingress.hosts[0].host=atlantis.$$TF_VAR_url
+	helm upgrade --install atlantis runatlantis/atlantis --create-namespace -n $(ns) -f src/deploy/atlantis/values.yaml
 
 deploy_jenkins:
-	kubectl -n $(ns) apply -f ./src/deploy/jenkins/sa.yaml
+	helm upgrade --install jenkins-sa ./src/deploy/jenkins/jenkins-sa -n stage
 	helm upgrade --install jenkins -n $(ns) -f ./src/deploy/jenkins/values.yaml jenkins/jenkins
-
-destroy_cloud:
-	cd ./src/terraform/app &&  terraform destroy -auto-approve
 
 delete:
 	helm uninstall monitoring -n $(ns)
 	helm uninstall atlantis -n $(ns)
 	helm uninstall jenkins -n $(ns)
-	cd ./src/deploy/app && qbec delete $(ns) --yes
-
-destroy_debug:
-	minikube delete
+	helm uninstall app-meow -n $(ns)
 
 configuring_access_to_k8s:
 	cd ./src/playbook && ANSIBLE_FORCE_COLOR=1 ansible-playbook -i inventory.yml configuring_access_to_k8s.yml

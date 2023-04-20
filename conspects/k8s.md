@@ -96,14 +96,16 @@ kubectl get ns
 # Изменить namespace
 kubectl config set-context --current --namespace=debug
 kubectl config set-context --current --namespace=default
-kubectl config set-context --current --namespace=prod
 kubectl config set-context --current --namespace=stage
+kubectl config set-context --current --namespace=prod
+
 kubectl config set-context --current --namespace=devops-tools
 
 # Просмотр логов:
 kubectl logs hello-node-697897c86-fvngg
 kubectl logs hello-node-697897c86-fvngg --all-containers
 kubectl logs jenkins-0 --all-containers
+kubectl logs img-1l30n-6m5h9 --all-containers
 
 # Проброс порта пода до локальной ВМ
 kubectl port-forward hello-node-697897c86-fvngg 8080:8080

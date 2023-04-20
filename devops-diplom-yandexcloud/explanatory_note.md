@@ -250,42 +250,15 @@ docker image push raleonid/app-meow:0.0.1
 | make delete                             |                            Только деинсталяция приложений                             |
 
 ### Настройка деплоя приложения:
-Деплой приложения осуществляем посредством qbec.
+Деплой приложения осуществляем посредством helm.
 1. Создаём каталог и инициализируем приложение:
 ```commandline
-mkdir -p src/deploy/app
-cd src/deploy/app
-qbec init app
+helm create app
 ```
-2. Описываем создание приложения в файле [app.jsonnet](src/deploy/app/components/app.jsonnet).
-3. Для доступа к приложению извне, необходимо поднять 2 сервиса: [ClusterIP](src/deploy/app/components/app-svc.jsonnet) и [Ingress](src/deploy/app/components/app-web.jsonnet).
-4. Параметризируем всё в [base.libsonnet](src/deploy/app/environments/base.libsonnet)
-5. В [qbec.yaml](src/deploy/app/qbec.yaml) добавляем использование внешних переменных
-```yaml
-  vars:
-    external:
-      - name: url
-        default: meow-app.local
-```
-6. В настройке [Ingress](src/deploy/app/components/app-web.jsonnet) определяем переменную `url` и далее используем её:
-```jsonnet
-local url = std.extVar('url');
-
-{
-//...
-  spec: {
-    rules: [
-      {
-        host: url,
-//...
-      }
-    ]
-  }
-}
-```
-7. Команда деплоя:
+2. Описываем создание приложения в файлах [каталога](src/deploy/app/), лишние очищаем, удаляем.
+3. Команда деплоя:
 ```commandline
-qbec apply debug --vm:ext-str url=meow-app.local --strict-vars --yes
+helm upgrade --install app-meow app --create-namespace -n stage
 ```
 где:
 * `--strict-vars` - требует, чтобы все объявленные значения были установлены в командной строке. Запрещает установку необъявленных переменных.
@@ -377,7 +350,6 @@ controller:
   installPlugins:
     - github-branch-source:1703.vd5a_2b_29c6cdc
     - kubernetes:3910.ve59cec5e33ea_
-    - docker-workflow:563.vd5d2e5c4007f
 //...
 persistence:
   storageClass: nfs
@@ -412,36 +384,187 @@ helm upgrade --install jenkins -n $(ns) -f ./src/deploy/jenkins/values.yaml jenk
 kubectl -n stage get secret jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode ; echo
 ```
 Пароль:
-cudRXMSYwahYbRS5jxDxgy
+0y31Rn5EEtPa72cuJ919Q4
 
 6. Внутренняя настройка Jenkins:
    1. Создаем credentials для подключения к репозиториям github:
 
-[jenkins-credentials.png](./img/jenkins-credentials.png)
+   ![](img/github-auth.png)
 
-   2. Создаём Multibranch Pipeline, настраиваем его работу с проектом в репозитории github
-   3. В репозитории github создаём webhook на события `Branch or tag creation` и `Commit comments`.
+   2. Создаем credentials для подключения к dockerhub:
+   
+   ![](img/dockerhub-auth.png)
+
+   3. Создаем credentials с токеном сервисного аккаунта `jenkins` в k8s:
+```commandline
+# Команда получения токена
+kubectl -n stage get secret jenkins-token -o go-template --template '{{index .data "token"}}' | base64 -d ; echo
+```
+   ![](img/token-k8s-sa.png)
+
+   4. Настраиваем `GitHub API usage`, чтобы пайплайн нам мозг не делал с задержками обращения к GitHub на этапе отладки. Устанавливаем значение `Throttle at/near rate limit`: 
+
+   ![](img/GitHub API usage.png)
+
+   5. Настраиваем `GitHub Servers`, в credentials указываем тип `secret text` и заполняем персональным токеном УЗ GitHub:
+
+   ![](img/token-github.png)
+
+   ![](img/github-server.png)
+
+   6. Создаём Multibranch Pipeline, настраиваем его работу с проектом в репозитории github
+   7. В репозитории github создаём webhook на события `Branch or tag creation` и `Commit comments`.
+    Payload URL `http://158.160.59.53:9000/github-webhook/`
 
    ![](img/jenkins-webhook.png)
 
    ![](img/jenkins-webhook-test.png)
+   
+   ![](img/shared-secret.png)
 
-   4. Создаём пайплайн исходя из условий задачи.
+   8. Создаём пайплайн исходя из условий задачи.
+
+      ![](img/pipeline-1.png)
+
+      ![](img/pipeline-strategy.png)
+
       1. _При любом коммите в репозиторий с тестовым приложением, происходит сборка и отправка в регистр Docker образа._
          Т.к. веток может быть много, чтобы при коммитах из разных веток, образ не перезаписывался, нам и в этой задаче нужно отправлять с тегами.
          Условимся, что в данном случае, имя тега будет состоять из имени ветки и билда сборки. Например `main-46`.
-      2. 
+      2. В тестовом приложении, создаем [Jenkinsfile](https://github.com/ra-leonid/app-meow/blob/main/Jenkinsfile).
+      3. Для автодеплоя переносим манифесты приложения в его репозиторий. (TODO: В дальнейшем в большом изначальном деплое подтягивать приложение как подпроект гита)
+      4. Для сбора докер-образа, используем образ `docker:18.05-dind` stage('Build') (TODO: разобраться почему не получилось запустить сборку kaniko):
+      5. Для деплоя используем helm и kubectl
+
+   9. Проверяем что всё работает:
+
+   ![](img/pipeline-autostart-pods.png)
+   
+   ![](img/pipeline-branch.png)
+
+   ![](img/pipeline-tag.png)
+
+
+Генерируем личный токен разработчика:
+diplom
+`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`
+diplom1
+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
+leonid
+`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`
+
+http://158.160.102.29:9000/github-webhook/
+
+Тестируем работу webhook на создание тегов:
+```commandline
+git tag -a v0.0.1 -m "test webhook tag"
+git push new1 v0.0.1
+```
+
+git remote add new1 https://github.com/ra-diplom1/app-meow.git
+git branch -M main
+git push -u new1 main
+
+git add . && git commit --amend --no-edit && git push -u new1
+git add . && git commit -m "test" && git push -u new1
+
+
+Удалить все теги с сервера git:
+git ls-remote --tags --refs new1 | cut -f2 | xargs git push new1 --delete
+git tag -l | cut -f2 | xargs git tag -d
+
+
 
 **TODO**: 
 1. Реализовать безопасное хранение token и secret
 2. Реализовать установку с помощью qbec.
+3. Реализовать проброс credentials для подключения к github, dockerhub при деплое jenkins. 
 
-# Создание тестового приложения
-* Создаем образ командой ```docker image build -t raleonid/inbound-agent:3107.v665000b_51092-5 .```
+ssh-keygen -t ed25519 -C "ra-diplom1@mail.ru" -f ~/.ssh/github1
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/github1
+
+cat ~/.ssh/github1.pub
+
+helm show values jenkins/jenkins > src/deploy/jenkins/values.yaml
 
 ```commandline
+# Создаем образ командой:
+docker image build -t raleonid/inbound-agent:3107.v665000b_51092-5 .
+
 # Авторизуемся
 docker login
 # Отправляем в докер-репозиторий
 docker image push raleonid/inbound-agent:3107.v665000b_51092-5
 ```
+      3. В настройках Jenkins, пропишем его использование.
+```yaml
+//...
+agent:
+//...
+  image: "raleonid/inbound-agent"
+```
+
+
+/////////////////////
+# Create a ServiceAccount named `jenkins-robot` in a given namespace.
+kubectl -n stage create serviceaccount jenkins-robot
+kubectl -n stage create rolebinding jenkins-robot-binding --clusterrole=cluster-admin --serviceaccount=stage:jenkins-robot
+//kubectl -n stage get serviceaccount jenkins-robot -o go-template --template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}'
+kubectl -n stage get secrets jenkins-robot-token -o go-template --template '{{index .data "token"}}' | base64 -d ; echo
+
+
+Для автоматического деплоя, нам необходимо получить токен сервисного аккаунта jenkins.
+[В Kubernetes 1.24 секреты ServiceAccount больше не генерируются автоматически.](https://stackoverflow.com/questions/72256006/service-account-secret-is-not-listed-how-to-fix-it)
+Вам нужно вручную создать секрет, ключ token в data поле будет автоматически установлен.
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jenkins-token
+  annotations:
+    kubernetes.io/service-account.name: jenkins
+type: kubernetes.io/service-account-token
+```
+Поскольку вы создаете секрет вручную, вы знаете его name, и вам не нужно искать его в объекте ServiceAccount.
+Этот подход должен хорошо работать и в более ранних версиях Kubernetes.
+
+Получаем токен сервисного аккаунта:
+```commandline
+kubectl -n stage get secrets jenkins-token -o go-template --template '{{index .data "token"}}' | base64 -d ; echo
+```
+
+Сохраняем его в credentials Jenkins id=`jenkins-token`:
+TODO: вставить скрин
+
+Для деплоя внутри пайплайна, используем конструкцию (требуется установка плагина `kubernetes-cli`). 
+```commandline
+        withKubeConfig([credentialsId: 'jenkins-token', namespace: "stage"]) {
+            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.26.1/bin/linux/amd64/kubectl"'
+            sh 'chmod u+x ./kubectl'
+            sh './kubectl get pods -n stage'
+        }
+
+```
+kubectl config set-context --current --namespace=stage
+
+УДАЛИТЬ JENKINS
+kubectl -n stage delete -f ./src/deploy/jenkins/sa.yaml
+helm uninstall jenkins -n stage
+
+ДЕПЛОЙ JENKINS:
+kubectl -n stage apply -f ./src/deploy/jenkins/sa1.yaml
+kubectl -n stage get secret jenkins-token -o go-template --template '{{index .data "token"}}' | base64 -d ; echo
+kubectl -n stage apply -f ./src/deploy/jenkins/sa-deploy.yaml
+kubectl -n stage get secret jenkins-stage-token -o go-template --template '{{index .data "token"}}' | base64 -d ; echo
+
+helm upgrade --install jenkins -n stage -f ./src/deploy/jenkins/values.yaml jenkins/jenkins
+
+helm upgrade --install jenkins-sa ./src/deploy/jenkins/jenkins-sa -n stage
+
+http://158.160.59.53:9000/safeRestart - Allows all running jobs to complete. New jobs will remain in the queue to run after the restart is complete.
+
+http://158.160.59.53:9000/restart - Forces a restart without waiting for builds to complete.
+
+
+https://get.helm.sh/helm-v3.11.3-linux-amd64.tar.gz

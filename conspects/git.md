@@ -184,7 +184,7 @@ git config --global color.ui auto
 
 `git rebase -i HEAD~3` - интерактивное перебазирование коммитов начиная с 3-го предка текущей ветки
 
-В перебазировании можно изменять порядок променения коммитов
+В перебазировании можно изменять порядок применения коммитов
  
 Команды коммита в rebase:
 * `p, pick` - применить коммит
@@ -282,6 +282,10 @@ git config --global color.ui auto
 
 Пример:
 `git remote add 1336 git@github.com:1336/libgit2.git`
+`git remote add new git@github.com:ra-diplom/app-meow.git`
+
+Отправить изменения в новый репозиторий `new`:
+`git push -u new`
 
 Получить изменения из удаленного репозитория:
 
@@ -291,7 +295,7 @@ git config --global color.ui auto
 
 Получить и слить изменения из удаленного репозитория:
 
-`git push [remote-name] [branch-name]`
+`git pull [remote-name] [branch-name]`
 
 Просмотреть удаленный репозиторий
 

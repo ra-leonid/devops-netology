@@ -4,18 +4,18 @@
 
 ## An option to override the atlantis url,
 ##   if not using an ingress, set it to the external IP.
-atlantisUrl: http://158.160.59.53:4000
+# atlantisUrl: http://10.0.0.0
 
 # Replace this with your own repo allowlist:
-orgAllowlist: github.com/ra-leonid/*
+orgAllowlist: <replace-me>
 # logLevel: "debug"
 
 # If using GitHub, specify like the following:
-//github: {}
-github:
-   user: "ra-leonid"
-   token: "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"
-   secret: "bazar"
+github: {}
+# github:
+#   user: foo
+#   token: bar
+#   secret: baz
 # GitHub Enterprise only:
 #   hostname: github.your.org
 # (The chart will perform the base64 encoding for you for values that are stored in secrets.)
@@ -207,7 +207,7 @@ readinessProbe:
 service:
   type: NodePort
   port: 80
-  nodePort: 32221
+  targetPort: 4141
   loadBalancerIP: null
 
 podTemplate:
@@ -233,7 +233,7 @@ statefulSet:
 # terminationGracePeriodSeconds: 60
 
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName:
   apiVersion: ""
   annotations: {}
@@ -283,8 +283,7 @@ volumeClaim:
   ## Disk space for to check out repositories
   dataStorage: 5Gi
   ## Storage class name (if possible, use a resizable one)
-  storageClassName: nfs
-  storageClass: nfs # здесь изменить
+  # storageClassName: value
 
 ## To keep backwards compatibility
 ## DEPRECATED - Disk space for Atlantis to check out repositories
